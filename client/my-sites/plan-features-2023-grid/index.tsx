@@ -45,7 +45,7 @@ import scrollIntoViewport from 'calypso/lib/scroll-into-viewport';
 import { useIsPlanUpgradeCreditVisible } from 'calypso/my-sites/plan-features-2023-grid/hooks/use-is-plan-upgrade-credit-visible';
 import { PlanTypeSelectorProps } from 'calypso/my-sites/plans-features-main/components/plan-type-selector';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
-import { getPlan, getPlanRawPrice } from 'calypso/state/plans/selectors';
+import { getPlan } from 'calypso/state/plans/selectors';
 import getCurrentPlanPurchaseId from 'calypso/state/selectors/get-current-plan-purchase-id';
 import { isCurrentUserCurrentPlanOwner } from 'calypso/state/sites/plans/selectors';
 import isPlanAvailableForPurchase from 'calypso/state/sites/plans/selectors/is-plan-available-for-purchase';
@@ -941,8 +941,6 @@ const ConnectedPlanFeatures2023Grid = connect(
 					tagline = planConstantObj.getPlanTagline?.( isGlobalStylesOnPersonal ) ?? '';
 				}
 
-				const rawPrice = getPlanRawPrice( state, planProductId, true );
-
 				// This is the per month price of a monthly plan. E.g. $14 for Premium monthly.
 				const annualPlansOnlyFeatures = planConstantObj.getAnnualPlansOnlyFeatures?.() || [];
 				const planFeaturesTransformed: Array< TransformedFeatureObject > = [];
@@ -1014,7 +1012,6 @@ const ConnectedPlanFeatures2023Grid = connect(
 					planName: plan,
 					// TODO clk: snake_case?
 					product_name_short,
-					rawPrice,
 					isMonthlyPlan,
 					tagline,
 					storageOptions,
