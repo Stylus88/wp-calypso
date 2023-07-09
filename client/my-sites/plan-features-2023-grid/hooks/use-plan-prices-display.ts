@@ -26,6 +26,7 @@ export function usePlanPricesDisplay( {
 	currentSitePlanSlug,
 	withoutProRatedCredits,
 }: Props ): {
+	rawPrice: number | null;
 	originalPrice: number;
 	discountedPrice: number;
 } {
@@ -45,6 +46,7 @@ export function usePlanPricesDisplay( {
 
 	if ( currentSitePlanSlug === planSlug ) {
 		return {
+			rawPrice: planPrices.rawPrice,
 			originalPrice: sitePlanRawPrice,
 			discountedPrice: 0,
 		};
@@ -52,7 +54,8 @@ export function usePlanPricesDisplay( {
 
 	if ( ! availableForPurchase ) {
 		return {
-			originalPrice: planPrices.rawPrice,
+			rawPrice: planPrices.rawPrice,
+			originalPrice: planPrices.rawPrice || 0,
 			discountedPrice: 0,
 		};
 	}
@@ -62,7 +65,8 @@ export function usePlanPricesDisplay( {
 		: planPrices.planDiscountedRawPrice || planPrices.discountedRawPrice;
 
 	return {
-		originalPrice: planPrices.rawPrice,
+		rawPrice: planPrices.rawPrice,
+		originalPrice: planPrices.rawPrice || 0,
 		discountedPrice,
 	};
 }

@@ -489,12 +489,11 @@ export class PlanFeatures2023Grid extends Component<
 		return planPropertiesObj
 			.filter( ( { isVisible } ) => isVisible )
 			.map( ( properties ) => {
-				const { planName, rawPrice } = properties;
+				const { planName } = properties;
 				const isWooExpressPlus = isWooExpressPlusPlan( planName );
 				const classes = classNames( 'plan-features-2023-grid__table-item', 'is-bottom-aligned', {
 					'has-border-top': ! isReskinned,
 				} );
-				const hasNoPrice = rawPrice === undefined || rawPrice === null;
 
 				return (
 					<Container
@@ -503,15 +502,13 @@ export class PlanFeatures2023Grid extends Component<
 						className={ classes }
 						isMobile={ options?.isMobile }
 					>
-						{ ! hasNoPrice && (
-							<PlanFeatures2023GridHeaderPrice
-								isPlanUpgradeCreditEligible={ isPlanUpgradeCreditEligible }
-								planProperties={ properties }
-								isLargeCurrency={ isLargeCurrency }
-								currentSitePlanSlug={ currentSitePlanSlug }
-								siteId={ siteId }
-							/>
-						) }
+						<PlanFeatures2023GridHeaderPrice
+							isPlanUpgradeCreditEligible={ isPlanUpgradeCreditEligible }
+							planProperties={ properties }
+							isLargeCurrency={ isLargeCurrency }
+							currentSitePlanSlug={ currentSitePlanSlug }
+							siteId={ siteId }
+						/>
 						{ isWooExpressPlus && (
 							<div className="plan-features-2023-grid__header-tagline">
 								{ translate( 'Speak to our team for a custom quote.' ) }

@@ -29,7 +29,7 @@ export default function useIsLargeCurrency( {
 				returnMonthly,
 			} );
 			return [ rawPrice, discountedRawPrice, planDiscountedRawPrice ].some(
-				( price ) => price?.toString().length > LARGE_CURRENCY_CHAR_THRESHOLD
+				( price ) => price && price.toString().length > LARGE_CURRENCY_CHAR_THRESHOLD
 			);
 		} );
 	} );

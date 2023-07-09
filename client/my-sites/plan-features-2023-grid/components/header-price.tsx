@@ -140,50 +140,55 @@ const PlanFeatures2023GridHeaderPrice = ( {
 		siteId,
 	} );
 	const shouldShowDiscountedPrice = Boolean( planPrices.discountedPrice );
+	const isPricedPlan = null !== planPrices.rawPrice;
 
 	if ( isWpcomEnterpriseGridPlan( planName ) ) {
 		return null;
 	}
 
 	return (
-		<HeaderPriceContainer>
-			{ shouldShowDiscountedPrice && (
-				<>
-					<Badge className="plan-features-2023-grid__badge">
-						{ isPlanUpgradeCreditEligible
-							? translate( 'Credit applied' )
-							: translate( 'One time discount' ) }
-					</Badge>
-					<PricesGroup isLargeCurrency={ isLargeCurrency }>
+		<>
+			{ isPricedPlan ? (
+				<HeaderPriceContainer>
+					{ shouldShowDiscountedPrice && (
+						<>
+							<Badge className="plan-features-2023-grid__badge">
+								{ isPlanUpgradeCreditEligible
+									? translate( 'Credit applied' )
+									: translate( 'One time discount' ) }
+							</Badge>
+							<PricesGroup isLargeCurrency={ isLargeCurrency }>
+								<PlanPrice
+									currencyCode={ currencyCode }
+									rawPrice={ planPrices.originalPrice }
+									displayPerMonthNotation={ false }
+									isLargeCurrency={ isLargeCurrency }
+									priceDisplayWrapperClassName="plans-grid-2023__html-price-display-wrapper"
+									original
+								/>
+								<PlanPrice
+									currencyCode={ currencyCode }
+									rawPrice={ planPrices.discountedPrice }
+									displayPerMonthNotation={ false }
+									isLargeCurrency={ isLargeCurrency }
+									priceDisplayWrapperClassName="plans-grid-2023__html-price-display-wrapper"
+									discounted
+								/>
+							</PricesGroup>
+						</>
+					) }
+					{ ! shouldShowDiscountedPrice && (
 						<PlanPrice
 							currencyCode={ currencyCode }
 							rawPrice={ planPrices.originalPrice }
 							displayPerMonthNotation={ false }
 							isLargeCurrency={ isLargeCurrency }
 							priceDisplayWrapperClassName="plans-grid-2023__html-price-display-wrapper"
-							original
 						/>
-						<PlanPrice
-							currencyCode={ currencyCode }
-							rawPrice={ planPrices.discountedPrice }
-							displayPerMonthNotation={ false }
-							isLargeCurrency={ isLargeCurrency }
-							priceDisplayWrapperClassName="plans-grid-2023__html-price-display-wrapper"
-							discounted
-						/>
-					</PricesGroup>
-				</>
-			) }
-			{ ! shouldShowDiscountedPrice && (
-				<PlanPrice
-					currencyCode={ currencyCode }
-					rawPrice={ planPrices.originalPrice }
-					displayPerMonthNotation={ false }
-					isLargeCurrency={ isLargeCurrency }
-					priceDisplayWrapperClassName="plans-grid-2023__html-price-display-wrapper"
-				/>
-			) }
-		</HeaderPriceContainer>
+					) }
+				</HeaderPriceContainer>
+			) : null }
+		</>
 	);
 };
 

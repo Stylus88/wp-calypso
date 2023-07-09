@@ -197,11 +197,9 @@ export function FreePlanPaidDomainDialog( {
 									comment: 'Eg: Get Personal - $4/month',
 									args: {
 										planTitle: planTitle as string,
-										planPrice: formatCurrency(
-											planPrices.discountedRawPrice || planPrices.rawPrice,
-											currencyCode,
-											{ stripZeros: true }
-										),
+										planPrice: formatCurrency( planPrices.discountedRawPrice, currencyCode, {
+											stripZeros: true,
+										} ),
 									},
 								} ) }
 						</StyledButton>
