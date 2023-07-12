@@ -941,7 +941,6 @@ const ConnectedPlanFeatures2023Grid = connect(
 					tagline = planConstantObj.getPlanTagline?.( isGlobalStylesOnPersonal ) ?? '';
 				}
 
-				// This is the per month price of a monthly plan. E.g. $14 for Premium monthly.
 				const annualPlansOnlyFeatures = planConstantObj.getAnnualPlansOnlyFeatures?.() || [];
 				const planFeaturesTransformed: Array< TransformedFeatureObject > = [];
 				let jetpackFeaturesTransformed: Array< TransformedFeatureObject > = [];
