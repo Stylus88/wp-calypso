@@ -26,9 +26,24 @@ import type {
 	FEATURE_GROUP_SHIPPING,
 } from './constants';
 import type { TranslateResult } from 'i18n-calypso';
-import type { ReactElement } from 'react';
+import type { ReactElement, MemoExoticComponent } from 'react';
 
 export type Feature = string;
+
+export type FeatureObject = {
+	getSlug: () => string;
+	getTitle: ( domainName?: string ) => TranslateResult;
+	getAlternativeTitle?: () => TranslateResult;
+	getConditionalTitle?: ( planSlug?: string ) => TranslateResult;
+	getHeader?: () => TranslateResult;
+	getDescription?: ( domainName?: string ) => TranslateResult;
+	getStoreSlug?: () => string;
+	getCompareTitle?: () => TranslateResult;
+	getCompareSubtitle?: () => TranslateResult;
+	getIcon?: () => string | { icon: string; component: MemoExoticComponent< any > } | JSX.Element;
+	isPlan?: boolean;
+	getFeatureGroup?: () => string;
+};
 
 // WPCom
 export type WPComProductSlug = ( typeof WPCOM_PRODUCTS )[ number ];

@@ -298,29 +298,17 @@ import {
 	FEATURE_GROUP_PAYMENT_TRANSACTION_FEES,
 } from '@automattic/calypso-products';
 import { localizeUrl } from '@automattic/i18n-utils';
-import i18n, { TranslateResult } from 'i18n-calypso';
-import { MemoExoticComponent } from 'react';
+import i18n from 'i18n-calypso';
 import SupportIcon from 'calypso/assets/images/onboarding/support.svg';
 import Theme2Image from 'calypso/assets/images/onboarding/theme-2.jpg';
 import ExternalLink from 'calypso/components/external-link';
 import ExternalLinkWithTracking from 'calypso/components/external-link/with-tracking';
 import MaterialIcon from 'calypso/components/material-icon';
 import { DOMAIN_PRICING_AND_AVAILABLE_TLDS } from 'calypso/lib/url/support';
+import type { FeatureObject as FeatureObjectPackaged } from '@automattic/calypso-products';
 
-export type FeatureObject = {
-	getSlug: () => string;
-	getTitle: ( domainName?: string ) => TranslateResult;
-	getAlternativeTitle?: () => TranslateResult;
-	getConditionalTitle?: ( planSlug?: string ) => TranslateResult;
-	getHeader?: () => TranslateResult;
-	getDescription?: ( domainName?: string ) => TranslateResult;
-	getStoreSlug?: () => string;
-	getCompareTitle?: () => TranslateResult;
-	getCompareSubtitle?: () => TranslateResult;
-	getIcon?: () => string | { icon: string; component: MemoExoticComponent< any > } | JSX.Element;
-	isPlan?: boolean;
-	getFeatureGroup?: () => string;
-};
+export type FeatureObject = FeatureObjectPackaged;
+
 export type FeatureList = {
 	[ key: string ]: FeatureObject;
 };
