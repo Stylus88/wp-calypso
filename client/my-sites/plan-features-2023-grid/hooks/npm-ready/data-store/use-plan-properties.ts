@@ -66,8 +66,10 @@ interface PlanFeatures {
 
 interface PlanProperties {
 	planConstantObj: FilteredPlan;
+	planName: PlanSlug;
 	tagline: string;
 	availableForPurchase: boolean;
+	storageOptions: string[]; // optional / null ?
 	product_name_short?: string | null;
 	current?: boolean;
 	isMonthlyPlan?: boolean;
@@ -82,8 +84,6 @@ export type PlanProperties_ = {
 	features: TransformedFeatureObject[];
 	jpFeatures: TransformedFeatureObject[];
 	isVisible: boolean;
-	planName: PlanSlug;
-	storageOptions: string[];
 };
 
 const usePlanFeatures = ( {
@@ -242,6 +242,7 @@ const usePlanProperties = ( {
 				planConstantObj,
 				billingPeriod: planObject?.bill_period,
 				currencyCode: planObject?.currency_code,
+				planName: planSlug,
 			},
 		};
 	}, {} as Record< PlanSlug, PlanProperties > );
