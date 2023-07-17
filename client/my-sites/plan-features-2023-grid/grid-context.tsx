@@ -3,7 +3,7 @@ import { createContext, useContext } from '@wordpress/element';
 import type {
 	GridPlan,
 	PlansIntent,
-} from './hooks/npm-ready/data-store/use-wpcom-plans-with-intent';
+} from './hooks/npm-ready/data-store/use-grid-plans-with-intent';
 
 interface PlansGridContext {
 	intent?: PlansIntent;
