@@ -1,14 +1,13 @@
-import { isWpcomEnterpriseGridPlan, PlanSlug } from '@automattic/calypso-products';
+import { isWpcomEnterpriseGridPlan, type PlanSlug } from '@automattic/calypso-products';
 import styled from '@emotion/styled';
 import { useTranslate } from 'i18n-calypso';
 import PlanPrice from 'calypso/my-sites/plan-price';
 import { useSelector } from 'calypso/state';
 import { getCurrentUserCurrencyCode } from 'calypso/state/currency-code/selectors';
 import { usePlanPricesDisplay } from '../hooks/use-plan-prices-display';
-import type { PlanProperties } from '../types';
 
 interface PlanFeatures2023GridHeaderPriceProps {
-	planProperties: PlanProperties;
+	planSlug: PlanSlug;
 	isLargeCurrency: boolean;
 	isPlanUpgradeCreditEligible: boolean;
 	currentSitePlanSlug?: string | null;
@@ -124,17 +123,16 @@ const HeaderPriceContainer = styled.div`
 `;
 
 const PlanFeatures2023GridHeaderPrice = ( {
-	planProperties,
+	planSlug,
 	isLargeCurrency,
 	isPlanUpgradeCreditEligible,
 	currentSitePlanSlug,
 	siteId,
 }: PlanFeatures2023GridHeaderPriceProps ) => {
 	const translate = useTranslate();
-	const { planName } = planProperties;
 	const currencyCode = useSelector( getCurrentUserCurrencyCode );
 	const planPrices = usePlanPricesDisplay( {
-		planSlug: planName as PlanSlug,
+		planSlug,
 		returnMonthly: true,
 		currentSitePlanSlug,
 		siteId,
@@ -142,7 +140,7 @@ const PlanFeatures2023GridHeaderPrice = ( {
 	const shouldShowDiscountedPrice = Boolean( planPrices.discountedPrice );
 	const isPricedPlan = null !== planPrices.rawPrice;
 
-	if ( isWpcomEnterpriseGridPlan( planName ) ) {
+	if ( isWpcomEnterpriseGridPlan( planSlug ) ) {
 		return null;
 	}
 

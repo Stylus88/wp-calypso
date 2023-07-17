@@ -16,6 +16,7 @@ import {
 	isWpcomEnterpriseGridPlan,
 	FilteredPlan,
 	TERM_MONTHLY,
+	isWpComFreePlan,
 } from '@automattic/calypso-products';
 import useHighlightLabels from './use-highlight-labels';
 import usePlansFromTypes from './use-plans-from-types';
@@ -37,20 +38,21 @@ export interface PlanFeatures {
 // TODO clk: move to types. will consume plan properties
 export type GridPlan = {
 	planSlug: PlanSlug;
+	// TODO clk: planName obviously needs to be refactored (removed) - use planSlug instead
+	planName: PlanSlug;
 	highlightLabel?: React.ReactNode | null;
 	isVisible: boolean;
 	planConstantObj: FilteredPlan;
-	planName: PlanSlug;
+	features: TransformedFeatureObject[];
+	jpFeatures: TransformedFeatureObject[];
+	storageOptions: string[]; // optional / null ?
 	tagline: string;
 	availableForPurchase: boolean;
-	storageOptions: string[]; // optional / null ?
 	product_name_short?: string | null;
 	current?: boolean;
 	isMonthlyPlan?: boolean;
 	billingPeriod?: PricedAPIPlan[ 'bill_period' ] | null;
 	currencyCode?: PricedAPIPlan[ 'currency_code' ] | null;
-
-	// TODO clk define this...
 	cartItemForPlan?: {
 		product_slug: string;
 	} | null;
@@ -251,26 +253,33 @@ const useGridPlansWithIntent = ( {
 			( planConstantObj.get2023PricingGridSignupStorageOptions &&
 				planConstantObj.get2023PricingGridSignupStorageOptions() ) ||
 			[];
+		// cartItemForPlan done in line here as it's a small piece of logic to pass another selector for
+		const cartItemForPlan =
+			isWpComFreePlan( planSlug ) || isWpcomEnterpriseGridPlan( planSlug )
+				? null
+				: {
+						product_slug: planSlug,
+				  };
 
 		return {
 			...acc,
 			[ planSlug ]: {
 				planSlug,
-				// TODO clk: planName obviously needs to be refactored (removed) - use planSlug instead
 				planName: planSlug,
 				highlightLabel: highlightLabels[ planSlug ],
 				isVisible: planSlugsForIntent.includes( planSlug ),
+				planConstantObj,
 				features: planFeatures?.[ planSlug ]?.features || [],
 				jpFeatures: planFeatures?.[ planSlug ]?.jpFeatures || [],
 				storageOptions,
 				tagline,
-				product_name_short,
 				availableForPurchase,
+				product_name_short,
 				current: sitePlanSlug === planSlug,
 				isMonthlyPlan,
-				planConstantObj,
 				billingPeriod: planObject?.bill_period,
 				currencyCode: planObject?.currency_code,
+				cartItemForPlan,
 			},
 		};
 	}, {} as Record< PlanSlug, GridPlan > );

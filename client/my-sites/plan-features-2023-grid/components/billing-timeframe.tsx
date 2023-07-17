@@ -18,17 +18,17 @@ import { getCurrentUserCurrencyCode } from 'calypso/state/currency-code/selector
 import { usePlanPricesDisplay } from '../hooks/use-plan-prices-display';
 
 interface Props {
-	planName: string;
+	planSlug: PlanSlug;
 	billingTimeframe: TranslateResult;
 	billingPeriod: number | null | undefined;
-	isMonthlyPlan: boolean;
+	isMonthlyPlan?: boolean;
 	currentSitePlanSlug?: string | null;
 	siteId?: number | null;
 }
 
 function usePerMonthDescription( {
 	isMonthlyPlan,
-	planName,
+	planSlug,
 	billingPeriod,
 	currentSitePlanSlug,
 	siteId,
@@ -36,8 +36,8 @@ function usePerMonthDescription( {
 	const translate = useTranslate();
 	const currencyCode = useSelector( getCurrentUserCurrencyCode );
 	const planPrices = usePlanPricesDisplay( {
-		planSlug: planName as PlanSlug,
-		returnMonthly: isMonthlyPlan,
+		planSlug,
+		returnMonthly: !! isMonthlyPlan,
 		currentSitePlanSlug,
 		siteId,
 	} );
@@ -46,15 +46,14 @@ function usePerMonthDescription( {
 	// would pay if they choose an annual plan instead of the monthly one. So pro-rated
 	// (or site-plan specific) credits should not be taken into account.
 	const planYearlyVariantPricesPerMonth = usePlanPricesDisplay( {
-		planSlug:
-			getPlanSlugForTermVariant( planName as PlanSlug, TERM_ANNUALLY ) ?? ( '' as PlanSlug ),
+		planSlug: getPlanSlugForTermVariant( planSlug, TERM_ANNUALLY ) ?? ( '' as PlanSlug ),
 		returnMonthly: true,
 		currentSitePlanSlug,
 		siteId,
 		withoutProRatedCredits: true,
 	} );
 
-	if ( isWpComFreePlan( planName ) || isWpcomEnterpriseGridPlan( planName ) ) {
+	if ( isWpComFreePlan( planSlug ) || isWpcomEnterpriseGridPlan( planSlug ) ) {
 		return null;
 	}
 
@@ -151,13 +150,13 @@ const DiscountPromotion = styled.div`
 `;
 
 const PlanFeatures2023GridBillingTimeframe: FunctionComponent< Props > = ( props ) => {
-	const { planName, billingTimeframe, isMonthlyPlan } = props;
+	const { planSlug, billingTimeframe, isMonthlyPlan } = props;
 	const translate = useTranslate();
 	const perMonthDescription = usePerMonthDescription( props );
 	const description = perMonthDescription || billingTimeframe;
 	const price = formatCurrency( 25000, 'USD' );
 
-	if ( isWooExpressPlan( planName ) && isMonthlyPlan ) {
+	if ( isWooExpressPlan( planSlug ) && isMonthlyPlan ) {
 		return (
 			<div>
 				<div>{ billingTimeframe }</div>
@@ -166,7 +165,7 @@ const PlanFeatures2023GridBillingTimeframe: FunctionComponent< Props > = ( props
 		);
 	}
 
-	if ( isWpcomEnterpriseGridPlan( planName ) ) {
+	if ( isWpcomEnterpriseGridPlan( planSlug ) ) {
 		return (
 			<div className="plan-features-2023-grid__vip-price">
 				{ translate( 'Starts at {{b}}%(price)s{{/b}} yearly', {

@@ -320,8 +320,6 @@ const PlansFeaturesMain = ( {
 		? 'plans-default-wpcom'
 		: intentFromProps || intentFromSiteMeta.intent || 'plans-default-wpcom';
 
-	// TODO clk: these should be reindexed to respect planRecordsWithIntent in the order defined
-	// - depending on final form. works by maintaining an ordered index on default plans for now
 	const defaultPlanRecords = usePlansWithIntent( {
 		intent: 'default',
 		selectedPlan,

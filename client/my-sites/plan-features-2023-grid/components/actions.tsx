@@ -6,6 +6,7 @@ import {
 	TERM_TRIENNIALLY,
 	planMatches,
 	TERM_ANNUALLY,
+	type PlanSlug,
 } from '@automattic/calypso-products';
 import { Button } from '@automattic/components';
 import { useIsEnglishLocale } from '@automattic/i18n-utils';
@@ -32,8 +33,8 @@ type PlanFeaturesActionsButtonProps = {
 	isInSignup?: boolean;
 	isLaunchPage?: boolean | null;
 	onUpgradeClick: () => void;
-	planName: TranslateResult;
-	planType: string;
+	planTitle: TranslateResult;
+	planSlug: PlanSlug;
 	flowName?: string | null;
 	buttonText?: string;
 	isWpcomEnterpriseGridPlan: boolean;
@@ -56,12 +57,12 @@ const DummyDisabledButton = styled.div`
 
 const SignupFlowPlanFeatureActionButton = ( {
 	freePlan,
-	planName,
+	planTitle,
 	classes,
 	handleUpgradeButtonClick,
 }: {
 	freePlan: boolean;
-	planName: TranslateResult;
+	planTitle: TranslateResult;
 	classes: string;
 	handleUpgradeButtonClick: () => void;
 } ) => {
@@ -73,7 +74,7 @@ const SignupFlowPlanFeatureActionButton = ( {
 	} else {
 		btnText = translate( 'Get %(plan)s', {
 			args: {
-				plan: planName,
+				plan: planTitle,
 			},
 		} );
 	}
@@ -87,12 +88,12 @@ const SignupFlowPlanFeatureActionButton = ( {
 
 const LaunchPagePlanFeatureActionButton = ( {
 	freePlan,
-	planName,
+	planTitle,
 	classes,
 	handleUpgradeButtonClick,
 }: {
 	freePlan: boolean;
-	planName: TranslateResult;
+	planTitle: TranslateResult;
 	classes: string;
 	handleUpgradeButtonClick: () => void;
 } ) => {
@@ -113,7 +114,7 @@ const LaunchPagePlanFeatureActionButton = ( {
 		<Button className={ classes } onClick={ handleUpgradeButtonClick }>
 			{ translate( 'Select %(plan)s', {
 				args: {
-					plan: planName,
+					plan: planTitle,
 				},
 				context: 'Button to select a paid plan by plan name, e.g., "Select Personal"',
 				comment:
@@ -128,19 +129,18 @@ const LoggedInPlansFeatureActionButton = ( {
 	availableForPurchase,
 	classes,
 	handleUpgradeButtonClick,
-	planType,
 	current,
 	manageHref,
 	canUserPurchasePlan,
 	currentSitePlanSlug,
 	buttonText,
 	planActionOverrides,
+	planSlug,
 }: {
 	freePlan: boolean;
 	availableForPurchase?: boolean;
 	classes: string;
 	handleUpgradeButtonClick: () => void;
-	planType: string;
 	current?: boolean;
 	manageHref?: string;
 	canUserPurchasePlan?: boolean | null;
@@ -148,13 +148,14 @@ const LoggedInPlansFeatureActionButton = ( {
 	buttonText?: string;
 	selectedSiteSlug: string | null;
 	planActionOverrides?: PlanActionOverrides;
+	planSlug: PlanSlug;
 } ) => {
 	const translate = useTranslate();
 	const currentPlanBillPeriod = useSelector( ( state ) => {
 		return currentSitePlanSlug ? getPlanBillPeriod( state, currentSitePlanSlug ) : null;
 	} );
 	const gridPlanBillPeriod = useSelector( ( state ) => {
-		return planType ? getPlanBillPeriod( state, planType ) : null;
+		return planSlug ? getPlanBillPeriod( state, planSlug ) : null;
 	} );
 
 	if ( freePlan ) {
@@ -177,7 +178,7 @@ const LoggedInPlansFeatureActionButton = ( {
 		);
 	}
 
-	if ( current && planType !== PLAN_P2_FREE ) {
+	if ( current && planSlug !== PLAN_P2_FREE ) {
 		return (
 			<Button className={ classes } href={ manageHref } disabled={ ! manageHref }>
 				{ canUserPurchasePlan ? translate( 'Manage plan' ) : translate( 'View plan' ) }
@@ -207,10 +208,10 @@ const LoggedInPlansFeatureActionButton = ( {
 		availableForPurchase &&
 		currentSitePlanSlug &&
 		! current &&
-		getPlanClass( planType ) === getPlanClass( currentSitePlanSlug ) &&
+		getPlanClass( planSlug ) === getPlanClass( currentSitePlanSlug ) &&
 		currentSitePlanSlug !== PLAN_ECOMMERCE_TRIAL_MONTHLY
 	) {
-		if ( planMatches( planType, { term: TERM_TRIENNIALLY } ) ) {
+		if ( planMatches( planSlug, { term: TERM_TRIENNIALLY } ) ) {
 			return (
 				<Button className={ classes } onClick={ handleUpgradeButtonClick }>
 					{ buttonText || translate( 'Upgrade to Triennial' ) }
@@ -218,7 +219,7 @@ const LoggedInPlansFeatureActionButton = ( {
 			);
 		}
 
-		if ( planMatches( planType, { term: TERM_BIENNIALLY } ) ) {
+		if ( planMatches( planSlug, { term: TERM_BIENNIALLY } ) ) {
 			return (
 				<Button className={ classes } onClick={ handleUpgradeButtonClick }>
 					{ buttonText || translate( 'Upgrade to Biennial' ) }
@@ -226,7 +227,7 @@ const LoggedInPlansFeatureActionButton = ( {
 			);
 		}
 
-		if ( planMatches( planType, { term: TERM_ANNUALLY } ) ) {
+		if ( planMatches( planSlug, { term: TERM_ANNUALLY } ) ) {
 			return (
 				<Button className={ classes } onClick={ handleUpgradeButtonClick }>
 					{ buttonText || translate( 'Upgrade to Yearly' ) }
@@ -272,8 +273,8 @@ const PlanFeaturesActionsButton: React.FC< PlanFeaturesActionsButtonProps > = ( 
 	isInSignup,
 	isLaunchPage,
 	onUpgradeClick,
-	planName,
-	planType,
+	planTitle,
+	planSlug,
 	flowName,
 	buttonText,
 	isWpcomEnterpriseGridPlan = false,
@@ -292,7 +293,7 @@ const PlanFeaturesActionsButton: React.FC< PlanFeaturesActionsButtonProps > = ( 
 		if ( ! freePlan ) {
 			recordTracksEvent( 'calypso_plan_features_upgrade_click', {
 				current_plan: currentSitePlanSlug,
-				upgrading_to: planType,
+				upgrading_to: planSlug,
 			} );
 		}
 
@@ -344,7 +345,7 @@ const PlanFeaturesActionsButton: React.FC< PlanFeaturesActionsButtonProps > = ( 
 		return (
 			<LaunchPagePlanFeatureActionButton
 				freePlan={ freePlan }
-				planName={ planName }
+				planTitle={ planTitle }
 				classes={ classes }
 				handleUpgradeButtonClick={ handleUpgradeButtonClick }
 			/>
@@ -353,7 +354,7 @@ const PlanFeaturesActionsButton: React.FC< PlanFeaturesActionsButtonProps > = ( 
 		return (
 			<SignupFlowPlanFeatureActionButton
 				freePlan={ freePlan }
-				planName={ planName }
+				planTitle={ planTitle }
 				classes={ classes }
 				handleUpgradeButtonClick={ handleUpgradeButtonClick }
 			/>
@@ -362,11 +363,11 @@ const PlanFeaturesActionsButton: React.FC< PlanFeaturesActionsButtonProps > = ( 
 
 	return (
 		<LoggedInPlansFeatureActionButton
+			planSlug={ planSlug }
 			freePlan={ freePlan }
 			availableForPurchase={ availableForPurchase }
 			classes={ classes }
 			handleUpgradeButtonClick={ handleUpgradeButtonClick }
-			planType={ planType }
 			current={ current }
 			manageHref={ manageHref }
 			canUserPurchasePlan={ canUserPurchasePlan }

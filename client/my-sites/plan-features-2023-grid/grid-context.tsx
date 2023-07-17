@@ -8,16 +8,15 @@ import type {
 interface PlansGridContext {
 	intent?: PlansIntent;
 	planRecords: Record< PlanSlug, GridPlan >;
-	visiblePlans: PlanSlug[];
 }
 
 const PlansGridContext = createContext< PlansGridContext >( {} as PlansGridContext );
 
 const PlansGridContextProvider: React.FunctionComponent<
 	PlansGridContext & { children: React.ReactNode }
-> = ( { intent, planRecords, visiblePlans, children } ) => {
+> = ( { intent, planRecords, children } ) => {
 	return (
-		<PlansGridContext.Provider value={ { intent, planRecords, visiblePlans } }>
+		<PlansGridContext.Provider value={ { intent, planRecords } }>
 			{ children }
 		</PlansGridContext.Provider>
 	);
