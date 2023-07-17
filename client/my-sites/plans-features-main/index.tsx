@@ -32,16 +32,18 @@ import { useSiteGlobalStylesStatus } from 'calypso/state/sites/hooks/use-site-gl
 import { getCurrentPlan } from 'calypso/state/sites/plans/selectors';
 import { getSitePlanSlug, getSiteSlug } from 'calypso/state/sites/selectors';
 import usePlansWithIntent, {
-	GridPlan,
+	type GridPlan,
+	PlansIntent,
 } from '../plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans-with-intent';
 import { FreePlanPaidDomainDialog } from './components/free-plan-paid-domain-dialog';
+import usePlanFeatures from './hooks/data-store/use-plan-features';
+import usePricedAPIPlans from './hooks/data-store/use-priced-api-plans';
 import useFilterPlansForPlanFeatures from './hooks/use-filter-plans-for-plan-features';
 import usePlanBillingPeriod from './hooks/use-plan-billing-period';
 import usePlanFromUpsells from './hooks/use-plan-from-upsells';
 import usePlanIntentFromSiteMeta from './hooks/use-plan-intent-from-site-meta';
 import usePlanUpgradeabilityCheck from './hooks/use-plan-upgradeability-check';
 import type { IntervalType } from './types';
-import type { PlansIntent } from '../plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans-with-intent';
 import type { DomainSuggestion } from '@automattic/data-stores';
 import type { MinimalRequestCartProduct } from '@automattic/shopping-cart';
 import type { PlanFeatures2023GridProps } from 'calypso/my-sites/plan-features-2023-grid';
@@ -327,6 +329,8 @@ const PlansFeaturesMain = ( {
 		hideEnterprisePlan,
 		term,
 		usePlanUpgradeabilityCheck,
+		usePlanFeatures,
+		usePricedAPIPlans,
 	} );
 	const planRecordsWithIntent = usePlansWithIntent( {
 		intent,
@@ -335,6 +339,8 @@ const PlansFeaturesMain = ( {
 		hideEnterprisePlan,
 		term,
 		usePlanUpgradeabilityCheck,
+		usePlanFeatures,
+		usePricedAPIPlans,
 	} );
 	const visiblePlans =
 		useFilterPlansForPlanFeatures( {
