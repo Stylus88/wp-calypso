@@ -5,7 +5,7 @@ import type {
 	PlanFeatures,
 	PlansIntent,
 	TransformedFeatureObject,
-} from 'calypso/my-sites/plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans-with-intent';
+} from 'calypso/my-sites/plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans';
 
 type Props = {
 	planSlugs: PlanSlug[];

@@ -178,7 +178,7 @@ const usePlanTypesWithIntent = ( {
 };
 
 // TODO clk: move to plans data store
-const useGridPlansWithIntent = ( {
+const useGridPlans = ( {
 	usePlanFeatures,
 	usePricedAPIPlans,
 	term = TERM_MONTHLY,
@@ -190,7 +190,7 @@ const useGridPlansWithIntent = ( {
 	usePlanUpgradeabilityCheck,
 	isGlobalStylesOnPersonal,
 	selectedFeature,
-}: Props ): Record< PlanSlug, GridPlan > => {
+}: Props ): GridPlan[] => {
 	const availablePlanSlugs = usePlansFromTypes( {
 		planTypes: usePlanTypesWithIntent( {
 			intent: 'default',
@@ -230,7 +230,7 @@ const useGridPlansWithIntent = ( {
 	// TODO: pricedAPIPlans to be queried from data-store package
 	const pricedAPIPlans = usePricedAPIPlans( { planSlugs: availablePlanSlugs } );
 
-	return availablePlanSlugs.reduce( ( acc, planSlug ) => {
+	return availablePlanSlugs.map( ( planSlug ) => {
 		const planConstantObj = applyTestFiltersToPlansList( planSlug, undefined );
 		const planObject = pricedAPIPlans[ planSlug ];
 		const isMonthlyPlan = isMonthly( planSlug );
@@ -264,26 +264,23 @@ const useGridPlansWithIntent = ( {
 				  };
 
 		return {
-			...acc,
-			[ planSlug ]: {
-				planSlug,
-				highlightLabel: highlightLabels[ planSlug ],
-				isVisible: planSlugsForIntent.includes( planSlug ),
-				planConstantObj,
-				features: planFeatures?.[ planSlug ]?.features || [],
-				jpFeatures: planFeatures?.[ planSlug ]?.jpFeatures || [],
-				storageOptions,
-				tagline,
-				availableForPurchase,
-				product_name_short,
-				current: sitePlanSlug === planSlug,
-				isMonthlyPlan,
-				billingPeriod: planObject?.bill_period,
-				currencyCode: planObject?.currency_code,
-				cartItemForPlan,
-			},
+			planSlug,
+			highlightLabel: highlightLabels[ planSlug ],
+			isVisible: planSlugsForIntent.includes( planSlug ),
+			planConstantObj,
+			features: planFeatures?.[ planSlug ]?.features || [],
+			jpFeatures: planFeatures?.[ planSlug ]?.jpFeatures || [],
+			storageOptions,
+			tagline,
+			availableForPurchase,
+			product_name_short,
+			current: sitePlanSlug === planSlug,
+			isMonthlyPlan,
+			billingPeriod: planObject?.bill_period,
+			currencyCode: planObject?.currency_code,
+			cartItemForPlan,
 		};
-	}, {} as Record< PlanSlug, GridPlan > );
+	} );
 };
 
-export default useGridPlansWithIntent;
+export default useGridPlans;

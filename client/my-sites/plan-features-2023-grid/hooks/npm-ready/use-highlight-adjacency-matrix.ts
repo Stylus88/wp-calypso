@@ -14,10 +14,10 @@ interface Props {
 }
 
 const useHighlightIndices = ( { renderedPlans }: Props ) => {
-	const { planRecords } = usePlansGridContext();
+	const { gridPlansIndex } = usePlansGridContext();
 
 	return renderedPlans.reduce< number[] >( ( acc, planSlug, index ) => {
-		if ( planRecords[ planSlug ].highlightLabel ) {
+		if ( gridPlansIndex[ planSlug ].highlightLabel ) {
 			acc.push( index );
 		}
 

@@ -1,22 +1,35 @@
-import { PlanSlug } from '@automattic/calypso-products';
 import { createContext, useContext } from '@wordpress/element';
-import type {
-	GridPlan,
-	PlansIntent,
-} from './hooks/npm-ready/data-store/use-grid-plans-with-intent';
+import type { GridPlan, PlansIntent } from './hooks/npm-ready/data-store/use-grid-plans';
 
 interface PlansGridContext {
 	intent?: PlansIntent;
-	planRecords: Record< PlanSlug, GridPlan >;
+	gridPlans: GridPlan[];
+	gridPlansIndex: { [ key: string ]: GridPlan };
 }
 
 const PlansGridContext = createContext< PlansGridContext >( {} as PlansGridContext );
 
-const PlansGridContextProvider: React.FunctionComponent<
-	PlansGridContext & { children: React.ReactNode }
-> = ( { intent, planRecords, children } ) => {
+interface PlansGridContextProviderProps {
+	intent?: PlansIntent;
+	gridPlans: GridPlan[];
+	children: React.ReactNode;
+}
+
+const PlansGridContextProvider = ( {
+	intent,
+	gridPlans,
+	children,
+}: PlansGridContextProviderProps ) => {
+	const gridPlansIndex = gridPlans.reduce(
+		( acc, gridPlan ) => ( {
+			...acc,
+			[ gridPlan.planSlug ]: gridPlan,
+		} ),
+		{}
+	);
+
 	return (
-		<PlansGridContext.Provider value={ { intent, planRecords } }>
+		<PlansGridContext.Provider value={ { intent, gridPlans, gridPlansIndex } }>
 			{ children }
 		</PlansGridContext.Provider>
 	);

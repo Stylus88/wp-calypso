@@ -31,10 +31,10 @@ import isEligibleForWpComMonthlyPlan from 'calypso/state/selectors/is-eligible-f
 import { useSiteGlobalStylesStatus } from 'calypso/state/sites/hooks/use-site-global-styles-status';
 import { getCurrentPlan } from 'calypso/state/sites/plans/selectors';
 import { getSitePlanSlug, getSiteSlug } from 'calypso/state/sites/selectors';
-import usePlansWithIntent, {
+import useGridPlans, {
 	type GridPlan,
 	type PlansIntent,
-} from '../plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans-with-intent';
+} from '../plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans';
 import { FreePlanPaidDomainDialog } from './components/free-plan-paid-domain-dialog';
 import usePlanFeatures from './hooks/data-store/use-plan-features';
 import usePricedAPIPlans from './hooks/data-store/use-priced-api-plans';
@@ -88,8 +88,8 @@ export interface PlansFeaturesMainProps {
 }
 
 type OnboardingPricingGrid2023Props = PlansFeaturesMainProps & {
-	planRecordsForComparisonGrid: Record< PlanSlug, GridPlan >;
-	planRecords: Record< PlanSlug, GridPlan >;
+	gridPlansForComparisonGrid: GridPlan[];
+	gridPlansForFeaturesGrid: GridPlan[];
 	planTypeSelectorProps?: PlanTypeSelectorProps;
 	sitePlanSlug?: PlanSlug | null;
 	siteSlug?: string | null;
@@ -117,8 +117,8 @@ const SecondaryFormattedHeader = ( { siteSlug }: { siteSlug?: string | null } ) 
 
 const OnboardingPricingGrid2023 = ( props: OnboardingPricingGrid2023Props ) => {
 	const {
-		planRecords,
-		planRecordsForComparisonGrid,
+		gridPlansForFeaturesGrid,
+		gridPlansForComparisonGrid,
 		paidDomainName,
 		isInSignup,
 		isLaunchPage,
@@ -180,8 +180,8 @@ const OnboardingPricingGrid2023 = ( props: OnboardingPricingGrid2023Props ) => {
 		planActionOverrides,
 		intent,
 		isGlobalStylesOnPersonal: globalStylesInPersonalPlan,
-		planRecords,
-		planRecordsForComparisonGrid,
+		gridPlansForFeaturesGrid,
+		gridPlansForComparisonGrid,
 		showLegacyStorageFeature,
 	};
 
@@ -315,11 +315,13 @@ const PlansFeaturesMain = ( {
 	} );
 	const intentFromSiteMeta = usePlanIntentFromSiteMeta();
 	const planFromUpsells = usePlanFromUpsells();
-	// plans from upsells takes precedence for setting intent, globally
+	// plans from upsells takes precedence for setting intent, globally,
+	// TODO: it is currently set to the default wpcom set,
+	// which is intermediary until we have updated tailored features for all plans - at which point, we'll inject the upsell plan to the intent
 	const intent = planFromUpsells
 		? 'plans-default-wpcom'
 		: intentFromProps || intentFromSiteMeta.intent || 'plans-default-wpcom';
-	const planRecordsWithIntent = usePlansWithIntent( {
+	const gridPlans = useGridPlans( {
 		intent,
 		selectedPlan,
 		sitePlanSlug,
@@ -330,10 +332,10 @@ const PlansFeaturesMain = ( {
 		usePlanFeatures,
 		usePricedAPIPlans,
 	} );
-	// TODO: this should fall into the `usePlansWithIntent` hook
+	// TODO: `useFilterPlansForPlanFeatures` should gradually deprecate and whatever remains to fall into the `useGridPlans` hook
 	const filteredPlansForPlanFeatures =
 		useFilterPlansForPlanFeatures( {
-			plans: planRecordsWithIntent,
+			plans: gridPlans,
 			isDisplayingPlansNeededForFeature: isDisplayingPlansNeededForFeature(),
 			selectedPlan,
 			hideFreePlan,
@@ -342,16 +344,12 @@ const PlansFeaturesMain = ( {
 			hideBusinessPlan,
 			hideEcommercePlan,
 		} ) || null;
-	const planRecordsForComparisonGrid = filteredPlansForPlanFeatures;
-	const planRecordsForFeaturesGrid = Object.values( filteredPlansForPlanFeatures ).reduce(
-		( acc, gridPlan ) => {
-			return {
-				...acc,
-				...( gridPlan.isVisible && { [ gridPlan.planSlug ]: gridPlan } ),
-			};
-		},
-		{} as Record< PlanSlug, GridPlan >
-	);
+	// all the plans for comparison grid
+	const gridPlansForComparisonGrid = filteredPlansForPlanFeatures;
+	// only the visible ones for features grid
+	const gridPlansForFeaturesGrid = filteredPlansForPlanFeatures.reduce( ( acc, gridPlan ) => {
+		return [ ...acc, ...( gridPlan.isVisible ? [ gridPlan ] : [] ) ];
+	}, [] as GridPlan[] );
 
 	// If advertising plans for a certain feature, ensure user has pressed "View all plans" before they can see others
 	let hidePlanSelector = 'customer' === planTypeSelector && isDisplayingPlansNeededForFeature();
@@ -374,7 +372,7 @@ const PlansFeaturesMain = ( {
 		selectedFeature,
 		showBiennialToggle,
 		kind: planTypeSelector,
-		plans: Object.keys( filteredPlansForPlanFeatures ),
+		plans: filteredPlansForPlanFeatures.map( ( gridPlan ) => gridPlan.planSlug ),
 	};
 
 	return (
@@ -418,8 +416,8 @@ const PlansFeaturesMain = ( {
 				<>
 					{ ! hidePlanSelector && <PlanTypeSelector { ...planTypeSelectorProps } /> }
 					<OnboardingPricingGrid2023
-						planRecords={ planRecordsForFeaturesGrid }
-						planRecordsForComparisonGrid={ planRecordsForComparisonGrid }
+						gridPlansForFeaturesGrid={ gridPlansForFeaturesGrid }
+						gridPlansForComparisonGrid={ gridPlansForComparisonGrid }
 						paidDomainName={ paidDomainName }
 						isInSignup={ isInSignup }
 						isLaunchPage={ isLaunchPage }
