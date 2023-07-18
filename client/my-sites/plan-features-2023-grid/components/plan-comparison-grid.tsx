@@ -302,7 +302,7 @@ const FeatureFootnote = styled.span`
 `;
 
 type PlanComparisonGridProps = {
-	planRecords: Record< PlanSlug, GridPlan >;
+	planRecordsForComparisonGrid: Record< PlanSlug, GridPlan >;
 	intervalType?: string;
 	planTypeSelectorProps: PlanTypeSelectorProps;
 	isInSignup?: boolean;
@@ -337,6 +337,15 @@ type PlanComparisonGridHeaderProps = {
 	siteId?: number | null;
 	planActionOverrides?: PlanActionOverrides;
 	selectedPlan?: string;
+	planRecordsForComparisonGrid: Record< PlanSlug, GridPlan >;
+};
+
+type PlanComparisonGridHeaderCellProps = PlanComparisonGridHeaderProps & {
+	allVisible: boolean;
+	isLastInRow: boolean;
+	isLargeCurrency: boolean;
+	isPlanUpgradeCreditEligible: boolean;
+	planSlug: PlanSlug;
 };
 
 type RestructuredFeatures = {
@@ -350,15 +359,7 @@ type RestructuredFootnotes = {
 	footnotesByFeature: Record< Feature, number >;
 };
 
-const PlanComparisonGridHeaderCell: React.FunctionComponent<
-	PlanComparisonGridHeaderProps & {
-		allVisible: boolean;
-		isLastInRow: boolean;
-		isLargeCurrency: boolean;
-		isPlanUpgradeCreditEligible: boolean;
-		planSlug: PlanSlug;
-	}
-> = ( {
+const PlanComparisonGridHeaderCell = ( {
 	planSlug,
 	allVisible,
 	isLastInRow,
@@ -378,15 +379,15 @@ const PlanComparisonGridHeaderCell: React.FunctionComponent<
 	planActionOverrides,
 	isPlanUpgradeCreditEligible,
 	siteId,
-} ) => {
-	const { planRecords } = usePlansGridContext();
+	planRecordsForComparisonGrid,
+}: PlanComparisonGridHeaderCellProps ) => {
 	const { planConstantObj, availableForPurchase, current, ...planPropertiesObj } =
-		planRecords[ planSlug ];
+		planRecordsForComparisonGrid[ planSlug ];
 	const highlightAdjacencyMatrix = useHighlightAdjacencyMatrix( {
 		renderedPlans: visiblePlans.map( ( { planSlug } ) => planSlug ),
 	} );
 	const headerClasses = classNames( 'plan-comparison-grid__header-cell', getPlanClass( planSlug ), {
-		'popular-plan-parent-class': planRecords[ planSlug ]?.highlightLabel,
+		'popular-plan-parent-class': planRecordsForComparisonGrid[ planSlug ]?.highlightLabel,
 		'is-last-in-row': isLastInRow,
 		'plan-is-footer': isFooter,
 		'is-left-of-highlight': highlightAdjacencyMatrix[ planSlug ]?.leftOfHighlight,
@@ -403,7 +404,7 @@ const PlanComparisonGridHeaderCell: React.FunctionComponent<
 		<Cell className={ headerClasses } textAlign="start">
 			<PopularBadge
 				isInSignup={ isInSignup }
-				planName={ planSlug }
+				planSlug={ planSlug }
 				additionalClassName={ popularBadgeClasses }
 			/>
 			<PlanSelector>
@@ -474,7 +475,7 @@ const PlanComparisonGridHeaderCell: React.FunctionComponent<
 	);
 };
 
-const PlanComparisonGridHeader: React.FC< PlanComparisonGridHeaderProps > = ( {
+const PlanComparisonGridHeader = ( {
 	displayedPlans,
 	visiblePlans,
 	isInSignup,
@@ -490,7 +491,8 @@ const PlanComparisonGridHeader: React.FC< PlanComparisonGridHeaderProps > = ( {
 	siteId,
 	planActionOverrides,
 	selectedPlan,
-} ) => {
+	planRecordsForComparisonGrid,
+}: PlanComparisonGridHeaderProps ) => {
 	const allVisible = visiblePlans.length === displayedPlans.length;
 
 	const isLargeCurrency = useIsLargeCurrency( {
@@ -510,6 +512,7 @@ const PlanComparisonGridHeader: React.FC< PlanComparisonGridHeaderProps > = ( {
 			{ visiblePlans.map( ( { planSlug }, index ) => (
 				<PlanComparisonGridHeaderCell
 					planSlug={ planSlug }
+					planRecordsForComparisonGrid={ planRecordsForComparisonGrid }
 					isPlanUpgradeCreditEligible={ isPlanUpgradeCreditEligible }
 					key={ planSlug }
 					isLastInRow={ index === visiblePlans.length - 1 }
@@ -574,7 +577,7 @@ const PlanComparisonGridFeatureGroupRowCell: React.FunctionComponent< {
 			'is-only-highlight': highlightAdjacencyMatrix[ planSlug ]?.isOnlyHighlight,
 		}
 	);
-	const planPropertiesObj = visiblePlans.find( ( gridPlan ) => gridPlan.planSlug === planSlug );
+	const planPropertiesObj = planRecords[ planSlug ];
 	const planPaymentTransactionFees = planPropertiesObj?.features?.find(
 		( feature ) => feature?.getFeatureGroup?.() === FEATURE_GROUP_PAYMENT_TRANSACTION_FEES
 	);
@@ -717,8 +720,8 @@ const PlanComparisonGridFeatureGroupRow: React.FunctionComponent< {
 	);
 };
 
-export const PlanComparisonGrid: React.FC< PlanComparisonGridProps > = ( {
-	planRecords,
+export const PlanComparisonGrid = ( {
+	planRecordsForComparisonGrid,
 	intervalType,
 	planTypeSelectorProps,
 	isInSignup,
@@ -737,15 +740,14 @@ export const PlanComparisonGrid: React.FC< PlanComparisonGridProps > = ( {
 	showLegacyStorageFeature,
 } ) => {
 	const translate = useTranslate();
-	const gridPlans = Object.values( planRecords );
 	// Check to see if we have at least one Woo Express plan we're comparing.
 	const hasWooExpressFeatures = useMemo( () => {
-		const wooExpressPlans = gridPlans.filter(
+		const wooExpressPlans = Object.values( planRecordsForComparisonGrid ).filter(
 			( { planSlug, isVisible } ) => isVisible && isWooExpressPlan( planSlug )
 		);
 
 		return wooExpressPlans.length > 0;
-	}, [ gridPlans ] );
+	}, [ planRecordsForComparisonGrid ] );
 	// If we have a Woo Express plan, use the Woo Express feature groups, otherwise use the regular feature groups.
 	const featureGroupMap = hasWooExpressFeatures
 		? getWooExpressFeaturesGrouped()
@@ -781,20 +783,14 @@ export const PlanComparisonGrid: React.FC< PlanComparisonGridProps > = ( {
 	] );
 
 	const displayedPlans = useMemo( () => {
-		const filteredPlans = gridPlans.filter(
+		const filteredPlans = Object.values( planRecordsForComparisonGrid ).filter(
 			( { planSlug, isVisible } ) => isVisible && ! hiddenPlans.includes( planSlug )
 		);
-		const sortedPlanProperties = sortPlans(
-			filteredPlans,
-			currentSitePlanSlug,
-			isMediumBreakpoint
-		);
-		return sortedPlanProperties;
-	}, [ gridPlans, currentSitePlanSlug, isMediumBreakpoint, hiddenPlans ] );
+		return sortPlans( filteredPlans, currentSitePlanSlug, isMediumBreakpoint );
+	}, [ planRecordsForComparisonGrid, currentSitePlanSlug, isMediumBreakpoint, hiddenPlans ] );
 
 	useEffect( () => {
 		let newVisiblePlans = displayedPlans.map( ( { planSlug } ) => planSlug );
-
 		let visibleLength = newVisiblePlans.length;
 
 		visibleLength = isLargeBreakpoint ? 4 : visibleLength;
@@ -814,7 +810,7 @@ export const PlanComparisonGrid: React.FC< PlanComparisonGridProps > = ( {
 		// This is a map of features to the index of the footnote in the main list of footnotes.
 		const footnotesByFeature: Record< Feature, number > = {};
 
-		Object.values( featureGroupMap ).map( ( featureGroup: FeatureGroup ) => {
+		Object.values( featureGroupMap ).map( ( featureGroup ) => {
 			const footnotes = featureGroup?.getFootnotes?.();
 
 			if ( ! footnotes ) {
@@ -847,7 +843,7 @@ export const PlanComparisonGrid: React.FC< PlanComparisonGridProps > = ( {
 		const conditionalFeatureMap: Record< string, Set< string > > = {};
 		const planStorageOptionsMap: Record< string, string > = {};
 
-		for ( const plan of gridPlans ?? [] ) {
+		for ( const plan of Object.values( planRecordsForComparisonGrid ) ) {
 			const { planSlug } = plan;
 			const planObject = applyTestFiltersToPlansList( planSlug, undefined );
 
@@ -890,11 +886,16 @@ export const PlanComparisonGrid: React.FC< PlanComparisonGridProps > = ( {
 			);
 		}
 		return { featureMap: planFeatureMap, planStorageOptionsMap, conditionalFeatureMap };
-	}, [ gridPlans, isGlobalStylesOnPersonal, showLegacyStorageFeature, isMonthly ] );
+	}, [
+		planRecordsForComparisonGrid,
+		isGlobalStylesOnPersonal,
+		showLegacyStorageFeature,
+		isMonthly,
+	] );
 
 	const allJetpackFeatures = useMemo( () => {
 		const jetpackFeatures = new Set(
-			gridPlans
+			Object.values( planRecordsForComparisonGrid )
 				.map( ( { planSlug } ) => {
 					const planObject = applyTestFiltersToPlansList( planSlug, undefined );
 					const jetpackFeatures = planObject.get2023PricingGridSignupJetpackFeatures?.() ?? [];
@@ -906,7 +907,7 @@ export const PlanComparisonGrid: React.FC< PlanComparisonGridProps > = ( {
 		);
 
 		return jetpackFeatures;
-	}, [ gridPlans ] );
+	}, [ planRecordsForComparisonGrid ] );
 
 	const onPlanChange = useCallback(
 		( currentPlan: PlanSlug, event: ChangeEvent< HTMLSelectElement > ) => {
@@ -952,6 +953,7 @@ export const PlanComparisonGrid: React.FC< PlanComparisonGridProps > = ( {
 			<Grid isInSignup={ isInSignup }>
 				<PlanComparisonGridHeader
 					siteId={ siteId }
+					planRecordsForComparisonGrid={ planRecordsForComparisonGrid }
 					displayedPlans={ displayedPlans }
 					visiblePlans={ visibleGridPlans }
 					isInSignup={ isInSignup }
@@ -1013,6 +1015,7 @@ export const PlanComparisonGrid: React.FC< PlanComparisonGridProps > = ( {
 					);
 				} ) }
 				<PlanComparisonGridHeader
+					planRecordsForComparisonGrid={ planRecordsForComparisonGrid }
 					displayedPlans={ displayedPlans }
 					visiblePlans={ visibleGridPlans }
 					isInSignup={ isInSignup }

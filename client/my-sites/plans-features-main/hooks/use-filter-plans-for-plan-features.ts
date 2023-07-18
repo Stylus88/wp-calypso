@@ -32,13 +32,15 @@ const useFilterPlansForPlanFeatures = ( {
 	const filteredPlans = isDisplayingPlansNeededForFeature
 		? Object.entries( plans ).reduce( ( acc, [ planSlug, gridPlan ] ) => {
 				if ( selectedPlan && isEcommercePlan( selectedPlan ) ) {
-					return isEcommercePlan( planSlug ) ? { ...acc, [ planSlug ]: gridPlan } : acc;
+					return isEcommercePlan( planSlug )
+						? { ...acc, [ planSlug ]: gridPlan }
+						: { ...acc, [ planSlug ]: { ...gridPlan, isVisible: false } };
 				}
 
 				if ( selectedPlan && isBusinessPlan( selectedPlan ) ) {
 					return isBusinessPlan( planSlug ) || isEcommercePlan( planSlug )
 						? { ...acc, [ planSlug ]: gridPlan }
-						: acc;
+						: { ...acc, [ planSlug ]: { ...gridPlan, isVisible: false } };
 				}
 
 				if ( selectedPlan && isPremiumPlan( selectedPlan ) ) {
@@ -46,7 +48,7 @@ const useFilterPlansForPlanFeatures = ( {
 						isBusinessPlan( planSlug ) ||
 						isEcommercePlan( planSlug )
 						? { ...acc, [ planSlug ]: gridPlan }
-						: acc;
+						: { ...acc, [ planSlug ]: { ...gridPlan, isVisible: false } };
 				}
 
 				return acc;
@@ -61,7 +63,7 @@ const useFilterPlansForPlanFeatures = ( {
 			( hideBusinessPlan && isBusinessPlan( planSlug ) ) ||
 			( hideEcommercePlan && isEcommercePlan( planSlug ) )
 		) {
-			return acc;
+			return { ...acc, [ planSlug ]: { ...gridPlan, isVisible: false } };
 		}
 
 		return { ...acc, [ planSlug ]: gridPlan };

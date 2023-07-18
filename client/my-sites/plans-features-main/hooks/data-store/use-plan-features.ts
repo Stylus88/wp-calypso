@@ -11,7 +11,7 @@ type Props = {
 	planSlugs: PlanSlug[];
 	intent?: PlansIntent;
 	isGlobalStylesOnPersonal?: boolean;
-	selectedFeature?: string;
+	selectedFeature?: string | null;
 };
 
 // plan features will be ported to a package and be queried from there
@@ -100,8 +100,10 @@ const usePlanFeatures = ( {
 
 		return {
 			...acc,
-			features: planFeaturesTransformed,
-			jpFeatures: jetpackFeaturesTransformed,
+			[ planSlug ]: {
+				features: planFeaturesTransformed,
+				jpFeatures: jetpackFeaturesTransformed,
+			},
 		};
 	}, {} as Record< PlanSlug, PlanFeatures > );
 };

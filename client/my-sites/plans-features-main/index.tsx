@@ -33,7 +33,7 @@ import { getCurrentPlan } from 'calypso/state/sites/plans/selectors';
 import { getSitePlanSlug, getSiteSlug } from 'calypso/state/sites/selectors';
 import usePlansWithIntent, {
 	type GridPlan,
-	PlansIntent,
+	type PlansIntent,
 } from '../plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans-with-intent';
 import { FreePlanPaidDomainDialog } from './components/free-plan-paid-domain-dialog';
 import usePlanFeatures from './hooks/data-store/use-plan-features';
@@ -88,7 +88,7 @@ export interface PlansFeaturesMainProps {
 }
 
 type OnboardingPricingGrid2023Props = PlansFeaturesMainProps & {
-	visiblePlans: PlanSlug[];
+	planRecordsForComparisonGrid: Record< PlanSlug, GridPlan >;
 	planRecords: Record< PlanSlug, GridPlan >;
 	planTypeSelectorProps?: PlanTypeSelectorProps;
 	sitePlanSlug?: PlanSlug | null;
@@ -118,7 +118,7 @@ const SecondaryFormattedHeader = ( { siteSlug }: { siteSlug?: string | null } ) 
 const OnboardingPricingGrid2023 = ( props: OnboardingPricingGrid2023Props ) => {
 	const {
 		planRecords,
-		visiblePlans,
+		planRecordsForComparisonGrid,
 		paidDomainName,
 		isInSignup,
 		isLaunchPage,
@@ -168,9 +168,7 @@ const OnboardingPricingGrid2023 = ( props: OnboardingPricingGrid2023Props ) => {
 		isInSignup,
 		isLaunchPage,
 		onUpgradeClick,
-		planRecords, // We need all the plans in order to show the correct features in the plan comparison table
 		flowName,
-		visiblePlans,
 		selectedFeature,
 		selectedPlan,
 		siteId,
@@ -182,6 +180,8 @@ const OnboardingPricingGrid2023 = ( props: OnboardingPricingGrid2023Props ) => {
 		planActionOverrides,
 		intent,
 		isGlobalStylesOnPersonal: globalStylesInPersonalPlan,
+		planRecords,
+		planRecordsForComparisonGrid,
 		showLegacyStorageFeature,
 	};
 
@@ -319,28 +319,19 @@ const PlansFeaturesMain = ( {
 	const intent = planFromUpsells
 		? 'plans-default-wpcom'
 		: intentFromProps || intentFromSiteMeta.intent || 'plans-default-wpcom';
-
-	const defaultPlanRecords = usePlansWithIntent( {
-		intent: 'default',
-		selectedPlan,
-		sitePlanSlug,
-		hideEnterprisePlan,
-		term,
-		usePlanUpgradeabilityCheck,
-		usePlanFeatures,
-		usePricedAPIPlans,
-	} );
 	const planRecordsWithIntent = usePlansWithIntent( {
 		intent,
 		selectedPlan,
 		sitePlanSlug,
 		hideEnterprisePlan,
 		term,
+		selectedFeature,
 		usePlanUpgradeabilityCheck,
 		usePlanFeatures,
 		usePricedAPIPlans,
 	} );
-	const visiblePlans =
+	// TODO: this should fall into the `usePlansWithIntent` hook
+	const filteredPlansForPlanFeatures =
 		useFilterPlansForPlanFeatures( {
 			plans: planRecordsWithIntent,
 			isDisplayingPlansNeededForFeature: isDisplayingPlansNeededForFeature(),
@@ -351,11 +342,16 @@ const PlansFeaturesMain = ( {
 			hideBusinessPlan,
 			hideEcommercePlan,
 		} ) || null;
-	// merge/update default plans with plans with intent
-	const gridPlanRecords = {
-		...defaultPlanRecords,
-		...visiblePlans,
-	};
+	const planRecordsForComparisonGrid = filteredPlansForPlanFeatures;
+	const planRecordsForFeaturesGrid = Object.values( filteredPlansForPlanFeatures ).reduce(
+		( acc, gridPlan ) => {
+			return {
+				...acc,
+				...( gridPlan.isVisible && { [ gridPlan.planSlug ]: gridPlan } ),
+			};
+		},
+		{} as Record< PlanSlug, GridPlan >
+	);
 
 	// If advertising plans for a certain feature, ensure user has pressed "View all plans" before they can see others
 	let hidePlanSelector = 'customer' === planTypeSelector && isDisplayingPlansNeededForFeature();
@@ -378,7 +374,7 @@ const PlansFeaturesMain = ( {
 		selectedFeature,
 		showBiennialToggle,
 		kind: planTypeSelector,
-		plans: Object.keys( visiblePlans ),
+		plans: Object.keys( filteredPlansForPlanFeatures ),
 	};
 
 	return (
@@ -405,7 +401,7 @@ const PlansFeaturesMain = ( {
 			) }
 			{ siteId && (
 				<PlanNotice
-					visiblePlans={ Object.keys( visiblePlans ) as PlanSlug[] }
+					visiblePlans={ Object.keys( filteredPlansForPlanFeatures ) as PlanSlug[] }
 					siteId={ siteId }
 					isInSignup={ isInSignup }
 					{ ...( withDiscount &&
@@ -422,8 +418,8 @@ const PlansFeaturesMain = ( {
 				<>
 					{ ! hidePlanSelector && <PlanTypeSelector { ...planTypeSelectorProps } /> }
 					<OnboardingPricingGrid2023
-						planRecords={ gridPlanRecords }
-						visiblePlans={ Object.keys( visiblePlans ) as PlanSlug[] }
+						planRecords={ planRecordsForFeaturesGrid }
+						planRecordsForComparisonGrid={ planRecordsForComparisonGrid }
 						paidDomainName={ paidDomainName }
 						isInSignup={ isInSignup }
 						isLaunchPage={ isLaunchPage }

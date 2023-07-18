@@ -85,8 +85,7 @@ const Container = (
 
 export type PlanFeatures2023GridProps = {
 	planRecords: Record< PlanSlug, GridPlan >;
-	planRecordsForComparisonGrid: Record< PlanSlug, GridPlan >;
-	visiblePlans: PlanSlug[];
+	planRecordsForComparisonGrid: Record< PlanSlug, GridPlan >; // We need all the plans in order to show the correct features in the plan comparison table
 	isInSignup?: boolean;
 	siteId?: number | null;
 	isLaunchPage?: boolean | null;
@@ -131,14 +130,15 @@ type PlanFeatures2023GridState = {
 const PlanLogo: React.FunctionComponent< {
 	planIndex: number;
 	planSlug: PlanSlug;
+	gridPlans: GridPlan[];
 	isMobile?: boolean;
 	isInSignup?: boolean;
-} > = ( { planIndex, planSlug, isMobile, isInSignup } ) => {
+} > = ( { planIndex, planSlug, gridPlans, isMobile, isInSignup } ) => {
 	const { planRecords } = usePlansGridContext();
 	const { current } = planRecords[ planSlug ];
 	const translate = useTranslate();
 	const highlightAdjacencyMatrix = useHighlightAdjacencyMatrix( {
-		renderedPlans: Object.keys( planRecords ) as PlanSlug[],
+		renderedPlans: gridPlans.map( ( gridPlan ) => gridPlan.planSlug ),
 	} );
 	const headerClasses = classNames(
 		'plan-features-2023-grid__header-logo',
@@ -168,7 +168,7 @@ const PlanLogo: React.FunctionComponent< {
 		<Container key={ planSlug } className={ tableItemClasses } isMobile={ isMobile }>
 			<PopularBadge
 				isInSignup={ isInSignup }
-				planName={ planSlug }
+				planSlug={ planSlug }
 				additionalClassName={ popularBadgeClasses }
 			/>
 			<header className={ headerClasses }>
@@ -206,7 +206,6 @@ export class PlanFeatures2023Grid extends Component<
 > {
 	state = {
 		showPlansComparisonGrid: false,
-		planRecordsForTableSplit: this.props.planRecords,
 	};
 
 	plansComparisonGridContainerRef = createRef< HTMLDivElement >();
@@ -261,6 +260,7 @@ export class PlanFeatures2023Grid extends Component<
 			planRecordsForComparisonGrid,
 			showLegacyStorageFeature,
 		} = this.props;
+
 		return (
 			<div className="plans-wrapper">
 				<QueryActivePromotions />
@@ -301,7 +301,7 @@ export class PlanFeatures2023Grid extends Component<
 						>
 							<PlanComparisonGrid
 								planTypeSelectorProps={ planTypeSelectorProps }
-								planRecords={ planRecordsForComparisonGrid }
+								planRecordsForComparisonGrid={ planRecordsForComparisonGrid }
 								intervalType={ intervalType }
 								isInSignup={ isInSignup }
 								isLaunchPage={ isLaunchPage }
@@ -391,10 +391,10 @@ export class PlanFeatures2023Grid extends Component<
 	renderMobileView() {
 		const { translate, selectedFeature, planRecords } = this.props;
 		const CardContainer = (
-			props: React.ComponentProps< typeof FoldableCard > & { planName: string }
+			props: React.ComponentProps< typeof FoldableCard > & { planSlug: string }
 		) => {
-			const { children, planName, ...otherProps } = props;
-			return isWpcomEnterpriseGridPlan( planName ) ? (
+			const { children, planSlug, ...otherProps } = props;
+			return isWpcomEnterpriseGridPlan( planSlug ) ? (
 				<div { ...otherProps }>{ children }</div>
 			) : (
 				<FoldableCard { ...otherProps } compact clickableHeader>
@@ -421,7 +421,7 @@ export class PlanFeatures2023Grid extends Component<
 					{ this.maybeRenderRefundNotice( [ gridPlan ], { isMobile: true } ) }
 					<CardContainer
 						header={ translate( 'Show all features' ) }
-						planName={ gridPlan.planSlug }
+						planSlug={ gridPlan.planSlug }
 						key={ `${ gridPlan.planSlug }-${ index }` }
 						expanded={
 							selectedFeature &&
@@ -539,6 +539,7 @@ export class PlanFeatures2023Grid extends Component<
 					key={ planSlug }
 					planIndex={ index }
 					planSlug={ planSlug }
+					gridPlans={ gridPlans }
 					isMobile={ options?.isMobile }
 					isInSignup={ isInSignup }
 				/>
@@ -756,7 +757,7 @@ export class PlanFeatures2023Grid extends Component<
 				>
 					<PlanFeatures2023GridFeatures
 						features={ features }
-						planName={ planSlug }
+						planSlug={ planSlug }
 						paidDomainName={ paidDomainName }
 						hideUnavailableFeatures={ hideUnavailableFeatures }
 						selectedFeature={ selectedFeature }
@@ -774,7 +775,7 @@ export class PlanFeatures2023Grid extends Component<
 					) }
 					<PlanFeatures2023GridFeatures
 						features={ jpFeatures }
-						planName={ planSlug }
+						planSlug={ planSlug }
 						paidDomainName={ paidDomainName }
 						hideUnavailableFeatures={ hideUnavailableFeatures }
 					/>
@@ -831,7 +832,7 @@ const withIsLargeCurrency = ( Component: LocalizedComponent< typeof PlanFeatures
 /* eslint-disable wpcalypso/redux-no-bound-selectors */
 const ConnectedPlanFeatures2023Grid = connect(
 	( state: IAppState, ownProps: PlanFeatures2023GridType ) => {
-		const { siteId, currentSitePlanSlug } = ownProps;
+		const { siteId } = ownProps;
 		// TODO clk: canUserManagePlan should be passed through props instead of being calculated here
 		const canUserPurchasePlan = siteId
 			? ! isCurrentPlanPaid( state, siteId ) || isCurrentUserCurrentPlanOwner( state, siteId )
@@ -846,7 +847,6 @@ const ConnectedPlanFeatures2023Grid = connect(
 				: `/plans/my-plan/${ siteId }`;
 
 		return {
-			currentSitePlanSlug,
 			canUserPurchasePlan,
 			manageHref,
 			selectedSiteSlug,
@@ -861,7 +861,7 @@ const ConnectedPlanFeatures2023Grid = connect(
 const WrappedPlanFeatures2023Grid = ( props: PlanFeatures2023GridType ) => {
 	const isPlanUpgradeCreditEligible = useIsPlanUpgradeCreditVisible(
 		props.siteId,
-		props.visiblePlans
+		Object.keys( props.planRecords ) as PlanSlug[]
 	);
 
 	if ( props.isInSignup ) {

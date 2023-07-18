@@ -38,8 +38,6 @@ export interface PlanFeatures {
 // TODO clk: move to types. will consume plan properties
 export type GridPlan = {
 	planSlug: PlanSlug;
-	// TODO clk: planName obviously needs to be refactored (removed) - use planSlug instead
-	planName: PlanSlug;
 	highlightLabel?: React.ReactNode | null;
 	isVisible: boolean;
 	planConstantObj: FilteredPlan;
@@ -82,7 +80,7 @@ interface Props {
 		planSlugs: PlanSlug[];
 		intent?: PlansIntent;
 		isGlobalStylesOnPersonal?: boolean;
-		selectedFeature?: string;
+		selectedFeature?: string | null;
 	} ) => Record< PlanSlug, PlanFeatures >;
 	// API plans will be ported to data store and be queried from there
 	usePricedAPIPlans: ( {
@@ -90,6 +88,7 @@ interface Props {
 	}: {
 		planSlugs: PlanSlug[];
 	} ) => Record< PlanSlug, PricedAPIPlan | null >;
+	selectedFeature?: string | null;
 	term?: ( typeof TERMS_LIST )[ number ]; // defaults to monthly
 	intent?: PlansIntent;
 	selectedPlan?: PlanSlug;
@@ -190,6 +189,7 @@ const useGridPlansWithIntent = ( {
 	isInSignup,
 	usePlanUpgradeabilityCheck,
 	isGlobalStylesOnPersonal,
+	selectedFeature,
 }: Props ): Record< PlanSlug, GridPlan > => {
 	const availablePlanSlugs = usePlansFromTypes( {
 		planTypes: usePlanTypesWithIntent( {
@@ -210,7 +210,7 @@ const useGridPlansWithIntent = ( {
 		term,
 	} );
 	const planUpgradeability = usePlanUpgradeabilityCheck?.( { planSlugs: availablePlanSlugs } );
-	// we only fetch highlights for the plans that are available for the intent
+	// only fetch highlights for the plans that are available for the intent
 	const highlightLabels = useHighlightLabels( {
 		intent,
 		planSlugs: planSlugsForIntent,
@@ -224,7 +224,9 @@ const useGridPlansWithIntent = ( {
 		planSlugs: availablePlanSlugs,
 		intent,
 		isGlobalStylesOnPersonal,
+		selectedFeature,
 	} );
+
 	// TODO: pricedAPIPlans to be queried from data-store package
 	const pricedAPIPlans = usePricedAPIPlans( { planSlugs: availablePlanSlugs } );
 
@@ -265,7 +267,6 @@ const useGridPlansWithIntent = ( {
 			...acc,
 			[ planSlug ]: {
 				planSlug,
-				planName: planSlug,
 				highlightLabel: highlightLabels[ planSlug ],
 				isVisible: planSlugsForIntent.includes( planSlug ),
 				planConstantObj,
