@@ -8,13 +8,13 @@ const PopularBadge: React.FunctionComponent< {
 	planSlug: PlanSlug;
 	additionalClassName?: string;
 } > = ( { isInSignup, planSlug, additionalClassName } ) => {
-	const { planRecords } = usePlansGridContext();
+	const { gridPlansIndex } = usePlansGridContext();
 	const classes = classNames(
 		'plan-features-2023-grid__popular-badge',
 		getPlanClass( planSlug ),
 		additionalClassName
 	);
-	const highlightLabel = planRecords[ planSlug ]?.highlightLabel;
+	const highlightLabel = gridPlansIndex[ planSlug ]?.highlightLabel;
 
 	return (
 		<>
