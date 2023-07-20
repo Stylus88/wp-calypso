@@ -12,7 +12,7 @@ interface Props {
  * of any of the plan slugs exceeds 5 characters.
  * This is primarily used for lowering the font-size of "large" display prices.
  */
-export default function useIsLargeCurrency( { gridPlans, returnMonthly = true }: Props ): boolean {
+export default function useIsLargeCurrency( { gridPlans, returnMonthly = true }: Props ) {
 	return gridPlans.some( ( gridPlan ) => {
 		const {
 			pricing: { originalPrice, discountedPrice },
