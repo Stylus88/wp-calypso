@@ -21,7 +21,7 @@ import QuerySitePlans from 'calypso/components/data/query-site-plans';
 import QuerySites from 'calypso/components/data/query-sites';
 import FormattedHeader from 'calypso/components/formatted-header';
 import { planItem as getCartItemForPlan } from 'calypso/lib/cart-values/cart-items';
-import { isValidFeatureKey } from 'calypso/lib/plans/features-list';
+import { isValidFeatureKey, FEATURES_LIST } from 'calypso/lib/plans/features-list';
 import PlanNotice from 'calypso/my-sites/plans-features-main/components/plan-notice';
 import PlanTypeSelector from 'calypso/my-sites/plans-features-main/components/plan-type-selector';
 import canUpgradeToPlan from 'calypso/state/selectors/can-upgrade-to-plan';
@@ -33,9 +33,8 @@ import { getCurrentPlan } from 'calypso/state/sites/plans/selectors';
 import { getSitePlanSlug, getSiteSlug } from 'calypso/state/sites/selectors';
 import useGridPlans from '../plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans';
 import { FreePlanPaidDomainDialog } from './components/free-plan-paid-domain-dialog';
-import usePlanFeaturesForGridPlans from './hooks/data-store/use-plan-features-for-grid-plans';
 import usePricedAPIPlans from './hooks/data-store/use-priced-api-plans';
-import usePricingMetaForGridPlans from './hooks/data-store/use-pricing-meta';
+import usePricingMetaForGridPlans from './hooks/data-store/use-pricing-meta-for-grid-plans';
 import useFilterPlansForPlanFeatures from './hooks/use-filter-plans-for-plan-features';
 import usePlanBillingPeriod from './hooks/use-plan-billing-period';
 import usePlanFromUpsells from './hooks/use-plan-from-upsells';
@@ -96,6 +95,7 @@ type OnboardingPricingGrid2023Props = PlansFeaturesMainProps & {
 	sitePlanSlug?: PlanSlug | null;
 	siteSlug?: string | null;
 	intent?: PlansIntent;
+	isGlobalStylesOnPersonal?: boolean;
 };
 
 const SecondaryFormattedHeader = ( { siteSlug }: { siteSlug?: string | null } ) => {
@@ -139,6 +139,7 @@ const OnboardingPricingGrid2023 = ( props: OnboardingPricingGrid2023Props ) => {
 		siteSlug,
 		intent,
 		showLegacyStorageFeature,
+		isGlobalStylesOnPersonal,
 	} = props;
 	const translate = useTranslate();
 	const { setShowDomainUpsellDialog } = useDispatch( WpcomPlansUI.store );
@@ -146,7 +147,6 @@ const OnboardingPricingGrid2023 = ( props: OnboardingPricingGrid2023Props ) => {
 	const showDomainUpsellDialog = useCallback( () => {
 		setShowDomainUpsellDialog( true );
 	}, [ setShowDomainUpsellDialog ] );
-	const { globalStylesInPersonalPlan } = useSiteGlobalStylesStatus( siteId );
 
 	let planActionOverrides: PlanActionOverrides | undefined;
 	if ( sitePlanSlug && isFreePlan( sitePlanSlug ) ) {
@@ -181,11 +181,12 @@ const OnboardingPricingGrid2023 = ( props: OnboardingPricingGrid2023Props ) => {
 		currentSitePlanSlug: sitePlanSlug,
 		planActionOverrides,
 		intent,
-		isGlobalStylesOnPersonal: globalStylesInPersonalPlan,
+		isGlobalStylesOnPersonal,
 		gridPlansForFeaturesGrid,
 		gridPlansForComparisonGrid,
 		showLegacyStorageFeature,
 		usePricingMetaForGridPlans,
+		allFeaturesList: FEATURES_LIST,
 	};
 
 	const asyncPlanFeatures2023Grid = (
@@ -255,6 +256,7 @@ const PlansFeaturesMain = ( {
 		( state: IAppState ) => siteId && canUpgradeToPlan( state, siteId, PLAN_PERSONAL )
 	);
 	const previousRoute = useSelector( ( state: IAppState ) => getPreviousRoute( state ) );
+	const { globalStylesInPersonalPlan } = useSiteGlobalStylesStatus( siteId );
 
 	let _customerType = chooseDefaultCustomerType( {
 		currentCustomerType: customerType,
@@ -327,16 +329,17 @@ const PlansFeaturesMain = ( {
 		: intentFromProps || intentFromSiteMeta.intent || 'plans-default-wpcom';
 
 	const gridPlans = useGridPlans( {
+		allFeaturesList: FEATURES_LIST,
+		usePricedAPIPlans,
+		usePricingMetaForGridPlans,
+		selectedFeature,
+		term,
 		intent,
 		selectedPlan,
 		sitePlanSlug,
 		hideEnterprisePlan,
-		term,
-		selectedFeature,
 		usePlanUpgradeabilityCheck,
-		usePlanFeaturesForGridPlans,
-		usePricedAPIPlans,
-		usePricingMetaForGridPlans,
+		isGlobalStylesOnPersonal: globalStylesInPersonalPlan,
 	} );
 
 	// TODO: `useFilterPlansForPlanFeatures` should gradually deprecate and whatever remains to fall into the `useGridPlans` hook
@@ -445,6 +448,7 @@ const PlansFeaturesMain = ( {
 						siteSlug={ siteSlug }
 						intent={ intent }
 						showLegacyStorageFeature={ showLegacyStorageFeature }
+						isGlobalStylesOnPersonal={ globalStylesInPersonalPlan }
 					/>
 				</>
 			) }

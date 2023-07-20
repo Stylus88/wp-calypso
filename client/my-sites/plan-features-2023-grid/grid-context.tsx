@@ -1,3 +1,4 @@
+import { FeatureList } from '@automattic/calypso-products';
 import { createContext, useContext } from '@wordpress/element';
 import type {
 	GridPlan,
@@ -9,6 +10,7 @@ interface PlansGridContext {
 	intent?: PlansIntent;
 	gridPlans: GridPlan[];
 	gridPlansIndex: { [ key: string ]: GridPlan };
+	allFeaturesList: FeatureList;
 	helpers?: Record< 'usePricingMetaForGridPlans', UsePricingMetaForGridPlans >;
 }
 
@@ -18,6 +20,7 @@ interface PlansGridContextProviderProps {
 	intent?: PlansIntent;
 	gridPlans: GridPlan[];
 	usePricingMetaForGridPlans: UsePricingMetaForGridPlans;
+	allFeaturesList: FeatureList;
 	children: React.ReactNode;
 }
 
@@ -25,6 +28,7 @@ const PlansGridContextProvider = ( {
 	intent,
 	gridPlans,
 	usePricingMetaForGridPlans,
+	allFeaturesList,
 	children,
 }: PlansGridContextProviderProps ) => {
 	const gridPlansIndex = gridPlans.reduce(
@@ -41,6 +45,7 @@ const PlansGridContextProvider = ( {
 				intent,
 				gridPlans,
 				gridPlansIndex,
+				allFeaturesList,
 				helpers: { usePricingMetaForGridPlans },
 			} }
 		>

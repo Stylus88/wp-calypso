@@ -12,6 +12,7 @@ import {
 	isWooExpressPlan,
 	PlanSlug,
 	isWooExpressPlusPlan,
+	FeatureList,
 } from '@automattic/calypso-products';
 import {
 	JetpackLogo,
@@ -89,6 +90,8 @@ const Container = (
 export type PlanFeatures2023GridProps = {
 	gridPlansForFeaturesGrid: GridPlan[];
 	gridPlansForComparisonGrid: GridPlan[]; // We need all the plans in order to show the correct features in the plan comparison table
+	// allFeaturesList temporary until feature definitions are ported to calypso-products package
+	allFeaturesList: FeatureList;
 	isInSignup?: boolean;
 	siteId?: number | null;
 	isLaunchPage?: boolean | null;
@@ -749,6 +752,7 @@ export class PlanFeatures2023Grid extends Component<
 			gridPlansForComparisonGrid,
 			showLegacyStorageFeature,
 			usePricingMetaForGridPlans,
+			allFeaturesList,
 		} = this.props;
 
 		return (
@@ -759,6 +763,7 @@ export class PlanFeatures2023Grid extends Component<
 						intent={ intent }
 						gridPlans={ gridPlansForFeaturesGrid }
 						usePricingMetaForGridPlans={ usePricingMetaForGridPlans }
+						allFeaturesList={ allFeaturesList }
 					>
 						<div className="plan-features-2023-grid__content">
 							<div>
@@ -793,10 +798,10 @@ export class PlanFeatures2023Grid extends Component<
 							intent={ intent }
 							gridPlans={ gridPlansForComparisonGrid }
 							usePricingMetaForGridPlans={ usePricingMetaForGridPlans }
+							allFeaturesList={ allFeaturesList }
 						>
 							<PlanComparisonGrid
 								planTypeSelectorProps={ planTypeSelectorProps }
-								gridPlansForComparisonGrid={ gridPlansForComparisonGrid }
 								intervalType={ intervalType }
 								isInSignup={ isInSignup }
 								isLaunchPage={ isLaunchPage }

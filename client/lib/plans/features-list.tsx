@@ -305,13 +305,14 @@ import ExternalLink from 'calypso/components/external-link';
 import ExternalLinkWithTracking from 'calypso/components/external-link/with-tracking';
 import MaterialIcon from 'calypso/components/material-icon';
 import { DOMAIN_PRICING_AND_AVAILABLE_TLDS } from 'calypso/lib/url/support';
-import type { FeatureObject as FeatureObjectPackaged } from '@automattic/calypso-products';
+import type {
+	FeatureObject as FeatureObjectPackaged,
+	FeatureList as FeatureListPackaged,
+} from '@automattic/calypso-products';
 
 export type FeatureObject = FeatureObjectPackaged;
 
-export type FeatureList = {
-	[ key: string ]: FeatureObject;
-};
+export type FeatureList = FeatureListPackaged;
 
 export const FEATURES_LIST: FeatureList = {
 	[ FEATURE_BLANK ]: {

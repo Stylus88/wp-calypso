@@ -45,6 +45,10 @@ export type FeatureObject = {
 	getFeatureGroup?: () => string;
 };
 
+export type FeatureList = {
+	[ key: string ]: FeatureObject;
+};
+
 // WPCom
 export type WPComProductSlug = ( typeof WPCOM_PRODUCTS )[ number ];
 export type WPComPlanSlug = ( typeof WPCOM_PLANS )[ number ];

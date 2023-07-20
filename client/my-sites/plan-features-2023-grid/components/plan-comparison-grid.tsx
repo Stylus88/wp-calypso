@@ -1,5 +1,4 @@
 import {
-	applyTestFiltersToPlansList,
 	Feature,
 	FeatureGroup,
 	getPlanClass,
@@ -21,8 +20,8 @@ import { useMemo } from '@wordpress/element';
 import classNames from 'classnames';
 import { useTranslate } from 'i18n-calypso';
 import { useState, useCallback, useEffect, ChangeEvent } from 'react';
-import { FeatureObject, getPlanFeaturesObject } from 'calypso/lib/plans/features-list';
 import { useIsPlanUpgradeCreditVisible } from 'calypso/my-sites/plan-features-2023-grid/hooks/use-is-plan-upgrade-credit-visible';
+import getPlanFeaturesObject from 'calypso/my-sites/plan-features-2023-grid/lib/get-plan-features-object';
 import PlanTypeSelector, {
 	PlanTypeSelectorProps,
 } from 'calypso/my-sites/plans-features-main/components/plan-type-selector';
@@ -39,6 +38,7 @@ import PlanFeatures2023GridHeaderPrice from './header-price';
 import { Plans2023Tooltip } from './plans-2023-tooltip';
 import PopularBadge from './popular-badge';
 import type { PlanActionOverrides } from '../types';
+import type { FeatureObject } from '@automattic/calypso-products';
 
 function DropdownIcon() {
 	return (
@@ -302,7 +302,6 @@ const FeatureFootnote = styled.span`
 `;
 
 type PlanComparisonGridProps = {
-	gridPlansForComparisonGrid: GridPlan[];
 	intervalType?: string;
 	planTypeSelectorProps: PlanTypeSelectorProps;
 	isInSignup?: boolean;
@@ -538,7 +537,7 @@ const PlanComparisonGridFeatureGroupRowCell: React.FunctionComponent< {
 	isStorageFeature: boolean;
 	flowName?: string | null;
 } > = ( { feature, visibleGridPlans, restructuredFeatures, planSlug, isStorageFeature } ) => {
-	const { gridPlansIndex } = usePlansGridContext();
+	const { gridPlansIndex, allFeaturesList } = usePlansGridContext();
 	const translate = useTranslate();
 	const highlightAdjacencyMatrix = useHighlightAdjacencyMatrix( {
 		renderedPlans: visibleGridPlans.map( ( { planSlug } ) => planSlug ),
@@ -550,7 +549,7 @@ const PlanComparisonGridFeatureGroupRowCell: React.FunctionComponent< {
 	const hasConditionalFeature = featureSlug
 		? restructuredFeatures.conditionalFeatureMap[ planSlug ].has( featureSlug )
 		: false;
-	const [ storageFeature ] = getPlanFeaturesObject( [
+	const [ storageFeature ] = getPlanFeaturesObject( allFeaturesList, [
 		restructuredFeatures.planStorageOptionsMap[ planSlug ],
 	] );
 	const cellClasses = classNames(
@@ -711,7 +710,6 @@ const PlanComparisonGridFeatureGroupRow: React.FunctionComponent< {
 };
 
 export const PlanComparisonGrid = ( {
-	gridPlansForComparisonGrid,
 	intervalType,
 	planTypeSelectorProps,
 	isInSignup,
@@ -730,21 +728,22 @@ export const PlanComparisonGrid = ( {
 	showLegacyStorageFeature,
 } ) => {
 	const translate = useTranslate();
+	const isMonthly = intervalType === 'monthly';
+	const { gridPlans, allFeaturesList } = usePlansGridContext();
+
 	// Check to see if we have at least one Woo Express plan we're comparing.
 	const hasWooExpressFeatures = useMemo( () => {
-		const wooExpressPlans = gridPlansForComparisonGrid.filter(
+		const wooExpressPlans = gridPlans.filter(
 			( { planSlug, isVisible } ) => isVisible && isWooExpressPlan( planSlug )
 		);
 
 		return wooExpressPlans.length > 0;
-	}, [ gridPlansForComparisonGrid ] );
+	}, [ gridPlans ] );
+
 	// If we have a Woo Express plan, use the Woo Express feature groups, otherwise use the regular feature groups.
 	const featureGroupMap = hasWooExpressFeatures
 		? getWooExpressFeaturesGrouped()
 		: getPlanFeaturesGrouped();
-	const hiddenPlans = useMemo( () => [ PLAN_WOOEXPRESS_PLUS, PLAN_ENTERPRISE_GRID_WPCOM ], [] );
-
-	const isMonthly = intervalType === 'monthly';
 
 	let largeBreakpoint;
 	let mediumBreakpoint;
@@ -773,11 +772,13 @@ export const PlanComparisonGrid = ( {
 	] );
 
 	const displayedGridPlans = useMemo( () => {
-		const filteredPlans = gridPlansForComparisonGrid.filter(
+		const hiddenPlans = [ PLAN_WOOEXPRESS_PLUS, PLAN_ENTERPRISE_GRID_WPCOM ];
+		const filteredPlans = gridPlans.filter(
 			( { planSlug, isVisible } ) => isVisible && ! hiddenPlans.includes( planSlug )
 		);
+
 		return sortPlans( filteredPlans, currentSitePlanSlug, isMediumBreakpoint );
-	}, [ gridPlansForComparisonGrid, currentSitePlanSlug, isMediumBreakpoint, hiddenPlans ] );
+	}, [ gridPlans, currentSitePlanSlug, isMediumBreakpoint ] );
 
 	useEffect( () => {
 		let newVisiblePlans = displayedGridPlans.map( ( { planSlug } ) => planSlug );
@@ -833,20 +834,20 @@ export const PlanComparisonGrid = ( {
 		const conditionalFeatureMap: Record< string, Set< string > > = {};
 		const planStorageOptionsMap: Record< string, string > = {};
 
-		for ( const gridPlan of gridPlansForComparisonGrid ) {
-			const { planSlug } = gridPlan;
-			const planObject = applyTestFiltersToPlansList( planSlug, undefined );
+		for ( const gridPlan of gridPlans ) {
+			const { planSlug, planConstantObj } = gridPlan;
 
-			const wpcomFeatures = planObject.get2023PlanComparisonFeatureOverride
-				? planObject.get2023PlanComparisonFeatureOverride().slice()
-				: planObject.get2023PricingGridSignupWpcomFeatures?.( isGlobalStylesOnPersonal ).slice() ??
-				  [];
+			const wpcomFeatures = planConstantObj.get2023PlanComparisonFeatureOverride
+				? planConstantObj.get2023PlanComparisonFeatureOverride().slice()
+				: planConstantObj
+						.get2023PricingGridSignupWpcomFeatures?.( isGlobalStylesOnPersonal )
+						.slice() ?? [];
 
-			const jetpackFeatures = planObject.get2023PlanComparisonJetpackFeatureOverride
-				? planObject.get2023PlanComparisonJetpackFeatureOverride().slice()
-				: planObject.get2023PricingGridSignupJetpackFeatures?.().slice() ?? [];
+			const jetpackFeatures = planConstantObj.get2023PlanComparisonJetpackFeatureOverride
+				? planConstantObj.get2023PlanComparisonJetpackFeatureOverride().slice()
+				: planConstantObj.get2023PricingGridSignupJetpackFeatures?.().slice() ?? [];
 
-			const annualOnlyFeatures = planObject.getAnnualPlansOnlyFeatures?.() ?? [];
+			const annualOnlyFeatures = planConstantObj.getAnnualPlansOnlyFeatures?.() ?? [];
 
 			let featuresAvailable = isWooExpressPlan( planSlug )
 				? [ ...wpcomFeatures ]
@@ -868,36 +869,31 @@ export const PlanComparisonGrid = ( {
 			}
 			previousPlan = planSlug;
 			const [ storageOption ] =
-				planObject.get2023PricingGridSignupStorageOptions?.( showLegacyStorageFeature ) ?? [];
+				planConstantObj.get2023PricingGridSignupStorageOptions?.( showLegacyStorageFeature ) ?? [];
 			planStorageOptionsMap[ planSlug ] = storageOption;
 
 			conditionalFeatureMap[ planSlug ] = new Set(
-				planObject.get2023PlanComparisonConditionalFeatures?.() ?? []
+				planConstantObj.get2023PlanComparisonConditionalFeatures?.() ?? []
 			);
 		}
 		return { featureMap: planFeatureMap, planStorageOptionsMap, conditionalFeatureMap };
-	}, [
-		gridPlansForComparisonGrid,
-		isGlobalStylesOnPersonal,
-		showLegacyStorageFeature,
-		isMonthly,
-	] );
+	}, [ gridPlans, isGlobalStylesOnPersonal, showLegacyStorageFeature, isMonthly ] );
 
 	const allJetpackFeatures = useMemo( () => {
 		const jetpackFeatures = new Set(
-			gridPlansForComparisonGrid
-				.map( ( { planSlug } ) => {
-					const planObject = applyTestFiltersToPlansList( planSlug, undefined );
-					const jetpackFeatures = planObject.get2023PricingGridSignupJetpackFeatures?.() ?? [];
+			gridPlans
+				.map( ( { planConstantObj } ) => {
+					const jetpackFeatures = planConstantObj.get2023PricingGridSignupJetpackFeatures?.() ?? [];
 					const additionalJetpackFeatures =
-						planObject.get2023PlanComparisonJetpackFeatureOverride?.() ?? [];
+						planConstantObj.get2023PlanComparisonJetpackFeatureOverride?.() ?? [];
+
 					return jetpackFeatures.concat( ...additionalJetpackFeatures );
 				} )
 				.flat()
 		);
 
 		return jetpackFeatures;
-	}, [ gridPlansForComparisonGrid ] );
+	}, [ gridPlans ] );
 
 	const onPlanChange = useCallback(
 		( currentPlan: PlanSlug, event: ChangeEvent< HTMLSelectElement > ) => {
@@ -905,6 +901,7 @@ export const PlanComparisonGrid = ( {
 			const newVisiblePlans = visiblePlans.map( ( plan ) =>
 				plan === currentPlan ? ( newPlan as PlanSlug ) : plan
 			);
+
 			setVisiblePlans( newVisiblePlans );
 		},
 		[ visiblePlans ]
@@ -913,6 +910,7 @@ export const PlanComparisonGrid = ( {
 	const toggleFeatureGroup = ( featureGroupSlug: string ) => {
 		const index = visibleFeatureGroups.indexOf( featureGroupSlug );
 		const newVisibleFeatureGroups = [ ...visibleFeatureGroups ];
+
 		if ( index === -1 ) {
 			newVisibleFeatureGroups.push( featureGroupSlug );
 		} else {
@@ -924,9 +922,11 @@ export const PlanComparisonGrid = ( {
 
 	const visibleGridPlans = visiblePlans.reduce( ( acc, planSlug ) => {
 		const gridPlan = displayedGridPlans.find( ( gridPlan ) => gridPlan.planSlug === planSlug );
+
 		if ( gridPlan ) {
 			acc.push( gridPlan );
 		}
+
 		return acc;
 	}, [] as GridPlan[] );
 
@@ -959,7 +959,7 @@ export const PlanComparisonGrid = ( {
 				/>
 				{ Object.values( featureGroupMap ).map( ( featureGroup: FeatureGroup ) => {
 					const features = featureGroup.get2023PricingGridSignupWpcomFeatures();
-					const featureObjects = getPlanFeaturesObject( features );
+					const featureObjects = getPlanFeaturesObject( allFeaturesList, features );
 					const isHiddenInMobile = ! visibleFeatureGroups.includes( featureGroup.slug );
 
 					return (
