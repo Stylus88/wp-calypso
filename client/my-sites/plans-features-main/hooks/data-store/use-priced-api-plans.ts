@@ -20,9 +20,12 @@ const useProductIds = ( { planSlugs }: Props ) => {
 	}, {} as Record< PlanSlug, number | null > );
 };
 
-// API plans will be ported to data store and be queried from there
+/*
+ * API plans will be ported to data store and be queried from there
+ */
 const usePricedAPIPlans = ( { planSlugs }: Props ) => {
 	const productIds = useProductIds( { planSlugs } );
+
 	return useSelector( ( state ) => {
 		return planSlugs.reduce( ( acc, planSlug ) => {
 			const productId = productIds[ planSlug ];

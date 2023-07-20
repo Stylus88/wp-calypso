@@ -2,9 +2,7 @@ import { isWpcomEnterpriseGridPlan, type PlanSlug } from '@automattic/calypso-pr
 import styled from '@emotion/styled';
 import { useTranslate } from 'i18n-calypso';
 import PlanPrice from 'calypso/my-sites/plan-price';
-import { useSelector } from 'calypso/state';
-import { getCurrentUserCurrencyCode } from 'calypso/state/currency-code/selectors';
-import { usePlanPricesDisplay } from '../hooks/use-plan-prices-display';
+import { usePlansGridContext } from '../grid-context';
 
 interface PlanFeatures2023GridHeaderPriceProps {
 	planSlug: PlanSlug;
@@ -126,19 +124,14 @@ const PlanFeatures2023GridHeaderPrice = ( {
 	planSlug,
 	isLargeCurrency,
 	isPlanUpgradeCreditEligible,
-	currentSitePlanSlug,
-	siteId,
 }: PlanFeatures2023GridHeaderPriceProps ) => {
 	const translate = useTranslate();
-	const currencyCode = useSelector( getCurrentUserCurrencyCode );
-	const planPrices = usePlanPricesDisplay( {
-		planSlug,
-		returnMonthly: true,
-		currentSitePlanSlug,
-		siteId,
-	} );
-	const shouldShowDiscountedPrice = Boolean( planPrices.discountedPrice );
-	const isPricedPlan = null !== planPrices.rawPrice;
+	const { gridPlansIndex } = usePlansGridContext();
+	const {
+		pricing: { currencyCode, originalPrice, discountedPrice },
+	} = gridPlansIndex[ planSlug ];
+	const shouldShowDiscountedPrice = Boolean( discountedPrice.monthly );
+	const isPricedPlan = null !== originalPrice.monthly;
 
 	if ( isWpcomEnterpriseGridPlan( planSlug ) ) {
 		return null;
@@ -158,7 +151,7 @@ const PlanFeatures2023GridHeaderPrice = ( {
 							<PricesGroup isLargeCurrency={ isLargeCurrency }>
 								<PlanPrice
 									currencyCode={ currencyCode }
-									rawPrice={ planPrices.originalPrice }
+									rawPrice={ originalPrice.monthly }
 									displayPerMonthNotation={ false }
 									isLargeCurrency={ isLargeCurrency }
 									priceDisplayWrapperClassName="plans-grid-2023__html-price-display-wrapper"
@@ -166,7 +159,7 @@ const PlanFeatures2023GridHeaderPrice = ( {
 								/>
 								<PlanPrice
 									currencyCode={ currencyCode }
-									rawPrice={ planPrices.discountedPrice }
+									rawPrice={ discountedPrice.monthly }
 									displayPerMonthNotation={ false }
 									isLargeCurrency={ isLargeCurrency }
 									priceDisplayWrapperClassName="plans-grid-2023__html-price-display-wrapper"
@@ -178,7 +171,7 @@ const PlanFeatures2023GridHeaderPrice = ( {
 					{ ! shouldShowDiscountedPrice && (
 						<PlanPrice
 							currencyCode={ currencyCode }
-							rawPrice={ planPrices.originalPrice }
+							rawPrice={ originalPrice.monthly }
 							displayPerMonthNotation={ false }
 							isLargeCurrency={ isLargeCurrency }
 							priceDisplayWrapperClassName="plans-grid-2023__html-price-display-wrapper"

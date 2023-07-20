@@ -38,7 +38,9 @@ export function sortPlans(
 		...gridPlans.slice( firstPlanIndex + 1 ),
 		// Leftover plans (before the first plan) in descending order of value
 		...gridPlans.slice( 0, firstPlanIndex ).sort( ( planA, planB ) => {
-			return ( planB?.rawPrice || 0 ) - ( planA?.rawPrice || 0 );
+			return (
+				( planB?.pricing.originalPrice.full || 0 ) - ( planA?.pricing.originalPrice.full || 0 )
+			);
 		} ),
 	].filter( ( gridPlan ) => Boolean( gridPlan ) );
 }

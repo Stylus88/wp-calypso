@@ -14,8 +14,10 @@ type Props = {
 	selectedFeature?: string | null;
 };
 
-// plan features will be ported to a package and be queried from there
-// this hook can migrate to data store once that happens
+/*
+ * - plan features will be ported to a package and be queried from there
+ * - this hook can migrate to data store once that happens
+ */
 const usePlanFeatures = ( {
 	planSlugs,
 	intent,

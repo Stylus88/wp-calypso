@@ -56,10 +56,10 @@ import { Plans2023Tooltip } from './components/plans-2023-tooltip';
 import PopularBadge from './components/popular-badge';
 import PlansGridContextProvider, { usePlansGridContext } from './grid-context';
 import useHighlightAdjacencyMatrix from './hooks/npm-ready/use-highlight-adjacency-matrix';
-import useIsLargeCurrency from './hooks/use-is-large-currency';
+import useIsLargeCurrency from './hooks/npm-ready/use-is-large-currency';
 import { getStorageStringFromFeature } from './util';
 import type { PlansIntent } from './grid-context';
-import type { GridPlan } from './hooks/npm-ready/data-store/use-grid-plans';
+import type { GridPlan, PricingMetaForGridPlan } from './hooks/npm-ready/data-store/use-grid-plans';
 import type { PlanActionOverrides } from './types';
 import type { IAppState } from 'calypso/state/types';
 import './style.scss';
@@ -83,6 +83,14 @@ const Container = (
 	);
 };
 
+export type UsePricingMetaForGridPlans = ( {
+	planSlugs,
+	withoutProRatedCredits,
+}: {
+	planSlugs: PlanSlug[];
+	withoutProRatedCredits?: boolean;
+} ) => { [ planSlug: string ]: PricingMetaForGridPlan };
+
 export type PlanFeatures2023GridProps = {
 	gridPlansForFeaturesGrid: GridPlan[];
 	gridPlansForComparisonGrid: GridPlan[]; // We need all the plans in order to show the correct features in the plan comparison table
@@ -105,6 +113,7 @@ export type PlanFeatures2023GridProps = {
 	intent?: PlansIntent;
 	isGlobalStylesOnPersonal?: boolean;
 	showLegacyStorageFeature?: boolean;
+	usePricingMetaForGridPlans: UsePricingMetaForGridPlans;
 };
 
 type PlanFeatures2023GridConnectedProps = {
@@ -259,13 +268,18 @@ export class PlanFeatures2023Grid extends Component<
 			gridPlansForFeaturesGrid,
 			gridPlansForComparisonGrid,
 			showLegacyStorageFeature,
+			usePricingMetaForGridPlans,
 		} = this.props;
 
 		return (
 			<div className="plans-wrapper">
 				<QueryActivePromotions />
 				<div className="plan-features">
-					<PlansGridContextProvider intent={ intent } gridPlans={ gridPlansForFeaturesGrid }>
+					<PlansGridContextProvider
+						intent={ intent }
+						gridPlans={ gridPlansForFeaturesGrid }
+						usePricingMetaForGridPlans={ usePricingMetaForGridPlans }
+					>
 						<div className="plan-features-2023-grid__content">
 							<div>
 								<div className="plan-features-2023-grid__desktop-view">
@@ -295,7 +309,11 @@ export class PlanFeatures2023Grid extends Component<
 						ref={ this.plansComparisonGridContainerRef }
 						className="plan-features-2023-grid__plan-comparison-grid-container"
 					>
-						<PlansGridContextProvider intent={ intent } gridPlans={ gridPlansForComparisonGrid }>
+						<PlansGridContextProvider
+							intent={ intent }
+							gridPlans={ gridPlansForComparisonGrid }
+							usePricingMetaForGridPlans={ usePricingMetaForGridPlans }
+						>
 							<PlanComparisonGrid
 								planTypeSelectorProps={ planTypeSelectorProps }
 								gridPlansForComparisonGrid={ gridPlansForComparisonGrid }
@@ -503,29 +521,21 @@ export class PlanFeatures2023Grid extends Component<
 	}
 
 	renderBillingTimeframe( renderedGridPlans: GridPlan[], options?: PlanRowOptions ) {
-		const { currentSitePlanSlug, siteId } = this.props;
+		return renderedGridPlans.map( ( { planConstantObj, planSlug } ) => {
+			const classes = classNames(
+				'plan-features-2023-grid__table-item',
+				'plan-features-2023-grid__header-billing-info'
+			);
 
-		return renderedGridPlans.map(
-			( { planConstantObj, planSlug, isMonthlyPlan, billingPeriod } ) => {
-				const classes = classNames(
-					'plan-features-2023-grid__table-item',
-					'plan-features-2023-grid__header-billing-info'
-				);
-
-				return (
-					<Container className={ classes } isMobile={ options?.isMobile } key={ planSlug }>
-						<PlanFeatures2023GridBillingTimeframe
-							isMonthlyPlan={ isMonthlyPlan }
-							planSlug={ planSlug }
-							billingTimeframe={ planConstantObj.getBillingTimeFrame() }
-							billingPeriod={ billingPeriod }
-							currentSitePlanSlug={ currentSitePlanSlug }
-							siteId={ siteId }
-						/>
-					</Container>
-				);
-			}
-		);
+			return (
+				<Container className={ classes } isMobile={ options?.isMobile } key={ planSlug }>
+					<PlanFeatures2023GridBillingTimeframe
+						planSlug={ planSlug }
+						billingTimeframe={ planConstantObj.getBillingTimeFrame() }
+					/>
+				</Container>
+			);
+		} );
 	}
 
 	renderPlanLogos( renderedGridPlans: GridPlan[], options?: PlanRowOptions ) {
@@ -671,7 +681,7 @@ export class PlanFeatures2023Grid extends Component<
 			return false;
 		}
 
-		return gridPlan.map( ( { planSlug, billingPeriod } ) => (
+		return gridPlan.map( ( { planSlug, pricing: { billingPeriod } } ) => (
 			<Container
 				key={ planSlug }
 				className="plan-features-2023-grid__table-item"

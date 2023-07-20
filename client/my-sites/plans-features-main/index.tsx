@@ -31,19 +31,21 @@ import isEligibleForWpComMonthlyPlan from 'calypso/state/selectors/is-eligible-f
 import { useSiteGlobalStylesStatus } from 'calypso/state/sites/hooks/use-site-global-styles-status';
 import { getCurrentPlan } from 'calypso/state/sites/plans/selectors';
 import { getSitePlanSlug, getSiteSlug } from 'calypso/state/sites/selectors';
-import useGridPlans, {
-	type GridPlan,
-	type PlansIntent,
-} from '../plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans';
+import useGridPlans from '../plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans';
 import { FreePlanPaidDomainDialog } from './components/free-plan-paid-domain-dialog';
 import usePlanFeatures from './hooks/data-store/use-plan-features';
 import usePricedAPIPlans from './hooks/data-store/use-priced-api-plans';
+import usePricingMetaForGridPlans from './hooks/data-store/use-pricing-meta';
 import useFilterPlansForPlanFeatures from './hooks/use-filter-plans-for-plan-features';
 import usePlanBillingPeriod from './hooks/use-plan-billing-period';
 import usePlanFromUpsells from './hooks/use-plan-from-upsells';
 import usePlanIntentFromSiteMeta from './hooks/use-plan-intent-from-site-meta';
 import usePlanUpgradeabilityCheck from './hooks/use-plan-upgradeability-check';
 import type { IntervalType } from './types';
+import type {
+	GridPlan,
+	PlansIntent,
+} from '../plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans';
 import type { DomainSuggestion } from '@automattic/data-stores';
 import type { MinimalRequestCartProduct } from '@automattic/shopping-cart';
 import type { PlanFeatures2023GridProps } from 'calypso/my-sites/plan-features-2023-grid';
@@ -183,6 +185,7 @@ const OnboardingPricingGrid2023 = ( props: OnboardingPricingGrid2023Props ) => {
 		gridPlansForFeaturesGrid,
 		gridPlansForComparisonGrid,
 		showLegacyStorageFeature,
+		usePricingMetaForGridPlans,
 	};
 
 	const asyncPlanFeatures2023Grid = (
@@ -313,14 +316,16 @@ const PlansFeaturesMain = ( {
 		intervalType,
 		...( selectedPlan ? { defaultValue: getPlan( selectedPlan )?.term } : {} ),
 	} );
+
+	// TODO: plans from upsell takes precedence for setting intent right now
+	// - this is currently set to the default wpcom set until we have updated tailored features for all plans
+	// - at which point, we'll inject the upsell plan to the tailored plans mix instead
 	const intentFromSiteMeta = usePlanIntentFromSiteMeta();
 	const planFromUpsells = usePlanFromUpsells();
-	// plans from upsells takes precedence for setting intent, globally,
-	// TODO: it is currently set to the default wpcom set,
-	// which is intermediary until we have updated tailored features for all plans - at which point, we'll inject the upsell plan to the intent
 	const intent = planFromUpsells
 		? 'plans-default-wpcom'
 		: intentFromProps || intentFromSiteMeta.intent || 'plans-default-wpcom';
+
 	const gridPlans = useGridPlans( {
 		intent,
 		selectedPlan,
@@ -331,7 +336,9 @@ const PlansFeaturesMain = ( {
 		usePlanUpgradeabilityCheck,
 		usePlanFeatures,
 		usePricedAPIPlans,
+		usePricingMetaForGridPlans,
 	} );
+
 	// TODO: `useFilterPlansForPlanFeatures` should gradually deprecate and whatever remains to fall into the `useGridPlans` hook
 	const filteredPlansForPlanFeatures =
 		useFilterPlansForPlanFeatures( {
@@ -344,9 +351,9 @@ const PlansFeaturesMain = ( {
 			hideBusinessPlan,
 			hideEcommercePlan,
 		} ) || null;
-	// all the plans for comparison grid
+	// we need all the available plans for comparison grid (these should extend into plans-ui data store selectors)
 	const gridPlansForComparisonGrid = filteredPlansForPlanFeatures;
-	// only the visible ones for features grid
+	// we neeed only the visible ones for features grid (these should extend into plans-ui data store selectors)
 	const gridPlansForFeaturesGrid = filteredPlansForPlanFeatures.reduce( ( acc, gridPlan ) => {
 		return [ ...acc, ...( gridPlan.isVisible ? [ gridPlan ] : [] ) ];
 	}, [] as GridPlan[] );

@@ -22,6 +22,7 @@ import useHighlightLabels from './use-highlight-labels';
 import usePlansFromTypes from './use-plans-from-types';
 import type { PlanSlug, FeatureObject } from '@automattic/calypso-products';
 import type { PricedAPIPlan } from '@automattic/data-stores';
+import type { UsePricingMetaForGridPlans } from 'calypso/my-sites/plan-features-2023-grid';
 
 // TODO clk: move to plans data store
 export type TransformedFeatureObject = FeatureObject & {
@@ -35,10 +36,25 @@ export interface PlanFeatures {
 	jpFeatures: TransformedFeatureObject[];
 }
 
+// TODO clk: move to plans data store
+export interface PricingMetaForGridPlan {
+	billingPeriod?: PricedAPIPlan[ 'bill_period' ] | null;
+	currencyCode?: PricedAPIPlan[ 'currency_code' ] | null;
+	originalPrice: {
+		monthly: number | null;
+		full: number | null;
+	};
+	// if discounted prices are provided (not null), they will take precedence over originalPrice.
+	// UI will show original with a strikethrough or grayed out
+	discountedPrice: {
+		monthly: number | null;
+		full: number | null;
+	};
+}
+
 // TODO clk: move to types. will consume plan properties
 export type GridPlan = {
 	planSlug: PlanSlug;
-	highlightLabel?: React.ReactNode | null;
 	isVisible: boolean;
 	planConstantObj: FilteredPlan;
 	features: TransformedFeatureObject[];
@@ -49,11 +65,11 @@ export type GridPlan = {
 	product_name_short?: string | null;
 	current?: boolean;
 	isMonthlyPlan?: boolean;
-	billingPeriod?: PricedAPIPlan[ 'bill_period' ] | null;
-	currencyCode?: PricedAPIPlan[ 'currency_code' ] | null;
 	cartItemForPlan?: {
 		product_slug: string;
 	} | null;
+	highlightLabel?: React.ReactNode | null;
+	pricing: PricingMetaForGridPlan;
 };
 
 // TODO clk: move to plans data store
@@ -88,6 +104,7 @@ interface Props {
 	}: {
 		planSlugs: PlanSlug[];
 	} ) => Record< PlanSlug, PricedAPIPlan | null >;
+	usePricingMetaForGridPlans: UsePricingMetaForGridPlans;
 	selectedFeature?: string | null;
 	term?: ( typeof TERMS_LIST )[ number ]; // defaults to monthly
 	intent?: PlansIntent;
@@ -99,6 +116,7 @@ interface Props {
 	usePlanUpgradeabilityCheck?: ( { planSlugs }: { planSlugs: PlanSlug[] } ) => {
 		[ key: string ]: boolean;
 	};
+	withoutProRatedCreditsForPricing?: boolean;
 	// for AB Test experiment:
 	isGlobalStylesOnPersonal?: boolean;
 }
@@ -181,6 +199,7 @@ const usePlanTypesWithIntent = ( {
 const useGridPlans = ( {
 	usePlanFeatures,
 	usePricedAPIPlans,
+	usePricingMetaForGridPlans,
 	term = TERM_MONTHLY,
 	intent,
 	selectedPlan,
@@ -190,6 +209,7 @@ const useGridPlans = ( {
 	usePlanUpgradeabilityCheck,
 	isGlobalStylesOnPersonal,
 	selectedFeature,
+	withoutProRatedCreditsForPricing,
 }: Props ): GridPlan[] => {
 	const availablePlanSlugs = usePlansFromTypes( {
 		planTypes: usePlanTypesWithIntent( {
@@ -230,6 +250,11 @@ const useGridPlans = ( {
 	// TODO: pricedAPIPlans to be queried from data-store package
 	const pricedAPIPlans = usePricedAPIPlans( { planSlugs: availablePlanSlugs } );
 
+	const pricingMeta = usePricingMetaForGridPlans( {
+		planSlugs: availablePlanSlugs,
+		withoutProRatedCredits: withoutProRatedCreditsForPricing,
+	} );
+
 	return availablePlanSlugs.map( ( planSlug ) => {
 		const planConstantObj = applyTestFiltersToPlansList( planSlug, undefined );
 		const planObject = pricedAPIPlans[ planSlug ];
@@ -265,7 +290,6 @@ const useGridPlans = ( {
 
 		return {
 			planSlug,
-			highlightLabel: highlightLabels[ planSlug ],
 			isVisible: planSlugsForIntent.includes( planSlug ),
 			planConstantObj,
 			features: planFeatures?.[ planSlug ]?.features || [],
@@ -276,9 +300,9 @@ const useGridPlans = ( {
 			product_name_short,
 			current: sitePlanSlug === planSlug,
 			isMonthlyPlan,
-			billingPeriod: planObject?.bill_period,
-			currencyCode: planObject?.currency_code,
 			cartItemForPlan,
+			highlightLabel: highlightLabels[ planSlug ],
+			pricing: pricingMeta[ planSlug ],
 		};
 	} );
 };

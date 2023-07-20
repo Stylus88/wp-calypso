@@ -29,7 +29,7 @@ import PlanTypeSelector, {
 import { usePlansGridContext } from '../grid-context';
 import { GridPlan } from '../hooks/npm-ready/data-store/use-grid-plans';
 import useHighlightAdjacencyMatrix from '../hooks/npm-ready/use-highlight-adjacency-matrix';
-import useIsLargeCurrency from '../hooks/use-is-large-currency';
+import useIsLargeCurrency from '../hooks/npm-ready/use-is-large-currency';
 import { sortPlans } from '../lib/sort-plan-properties';
 import { plansBreakSmall } from '../media-queries';
 import { usePricingBreakpoint } from '../util';
@@ -380,8 +380,7 @@ const PlanComparisonGridHeaderCell = ( {
 	siteId,
 }: PlanComparisonGridHeaderCellProps ) => {
 	const { gridPlansIndex } = usePlansGridContext();
-	const { planConstantObj, availableForPurchase, current, ...planPropertiesObj } =
-		gridPlansIndex[ planSlug ];
+	const { planConstantObj, availableForPurchase, current } = gridPlansIndex[ planSlug ];
 	const highlightAdjacencyMatrix = useHighlightAdjacencyMatrix( {
 		renderedPlans: visibleGridPlans.map( ( { planSlug } ) => planSlug ),
 	} );
@@ -447,11 +446,7 @@ const PlanComparisonGridHeaderCell = ( {
 			<div className="plan-comparison-grid__billing-info">
 				<PlanFeatures2023GridBillingTimeframe
 					planSlug={ planSlug }
-					isMonthlyPlan={ planPropertiesObj.isMonthlyPlan }
 					billingTimeframe={ planConstantObj.getBillingTimeFrame() }
-					billingPeriod={ planPropertiesObj.billingPeriod }
-					currentSitePlanSlug={ currentSitePlanSlug }
-					siteId={ siteId }
 				/>
 			</div>
 			<PlanFeatures2023GridActions
