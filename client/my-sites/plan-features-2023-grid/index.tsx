@@ -59,7 +59,10 @@ import useHighlightAdjacencyMatrix from './hooks/npm-ready/use-highlight-adjacen
 import useIsLargeCurrency from './hooks/npm-ready/use-is-large-currency';
 import { getStorageStringFromFeature } from './util';
 import type { PlansIntent } from './grid-context';
-import type { GridPlan, PricingMetaForGridPlan } from './hooks/npm-ready/data-store/use-grid-plans';
+import type {
+	GridPlan,
+	UsePricingMetaForGridPlans,
+} from './hooks/npm-ready/data-store/use-grid-plans';
 import type { PlanActionOverrides } from './types';
 import type { IAppState } from 'calypso/state/types';
 import './style.scss';
@@ -82,14 +85,6 @@ const Container = (
 		<td { ...otherProps }>{ children }</td>
 	);
 };
-
-export type UsePricingMetaForGridPlans = ( {
-	planSlugs,
-	withoutProRatedCredits,
-}: {
-	planSlugs: PlanSlug[];
-	withoutProRatedCredits?: boolean;
-} ) => { [ planSlug: string ]: PricingMetaForGridPlan };
 
 export type PlanFeatures2023GridProps = {
 	gridPlansForFeaturesGrid: GridPlan[];

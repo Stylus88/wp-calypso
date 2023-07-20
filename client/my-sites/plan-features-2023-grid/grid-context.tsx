@@ -1,6 +1,9 @@
 import { createContext, useContext } from '@wordpress/element';
-import type { UsePricingMetaForGridPlans } from '.';
-import type { GridPlan, PlansIntent } from './hooks/npm-ready/data-store/use-grid-plans';
+import type {
+	GridPlan,
+	PlansIntent,
+	UsePricingMetaForGridPlans,
+} from './hooks/npm-ready/data-store/use-grid-plans';
 
 interface PlansGridContext {
 	intent?: PlansIntent;

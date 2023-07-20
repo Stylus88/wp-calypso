@@ -33,7 +33,7 @@ import { getCurrentPlan } from 'calypso/state/sites/plans/selectors';
 import { getSitePlanSlug, getSiteSlug } from 'calypso/state/sites/selectors';
 import useGridPlans from '../plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans';
 import { FreePlanPaidDomainDialog } from './components/free-plan-paid-domain-dialog';
-import usePlanFeatures from './hooks/data-store/use-plan-features';
+import usePlanFeaturesForGridPlans from './hooks/data-store/use-plan-features-for-grid-plans';
 import usePricedAPIPlans from './hooks/data-store/use-priced-api-plans';
 import usePricingMetaForGridPlans from './hooks/data-store/use-pricing-meta';
 import useFilterPlansForPlanFeatures from './hooks/use-filter-plans-for-plan-features';
@@ -334,7 +334,7 @@ const PlansFeaturesMain = ( {
 		term,
 		selectedFeature,
 		usePlanUpgradeabilityCheck,
-		usePlanFeatures,
+		usePlanFeaturesForGridPlans,
 		usePricedAPIPlans,
 		usePricingMetaForGridPlans,
 	} );

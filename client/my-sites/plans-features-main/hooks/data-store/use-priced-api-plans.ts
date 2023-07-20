@@ -17,7 +17,7 @@ const useProductIds = ( { planSlugs }: Props ) => {
 			...acc,
 			[ planSlug ]: planProductId,
 		};
-	}, {} as Record< PlanSlug, number | null > );
+	}, {} as { [ planSlug: string ]: number | null } );
 };
 
 /*
@@ -33,7 +33,7 @@ const usePricedAPIPlans = ( { planSlugs }: Props ) => {
 				...acc,
 				[ planSlug ]: null !== productId ? getPlan( state, productId ) : null,
 			};
-		}, {} as Record< PlanSlug, PricedAPIPlan | null > );
+		}, {} as { [ planSlug: string ]: PricedAPIPlan | null | undefined } );
 	} );
 };
 

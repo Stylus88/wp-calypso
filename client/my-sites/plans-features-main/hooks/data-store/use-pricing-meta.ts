@@ -8,8 +8,10 @@ import getSitePlanSlug from 'calypso/state/sites/selectors/get-site-plan-slug';
 import getSelectedSiteId from 'calypso/state/ui/selectors/get-selected-site-id';
 import usePricedAPIPlans from './use-priced-api-plans';
 import type { PlanSlug } from '@automattic/calypso-products';
-import type { UsePricingMetaForGridPlans } from 'calypso/my-sites/plan-features-2023-grid';
-import type { PricingMetaForGridPlan } from 'calypso/my-sites/plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans';
+import type {
+	UsePricingMetaForGridPlans,
+	PricingMetaForGridPlan,
+} from 'calypso/my-sites/plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans';
 import type { IAppState } from 'calypso/state/types';
 
 interface Props {
@@ -19,8 +21,8 @@ interface Props {
 
 /*
  * Returns the pricing metadata needed for the plans-ui components.
- * - see GridPlanPricing type for details
- * - will migrate to data-store once dependencies are resolved (with site & plans data-stores more complete)
+ * - see PricingMetaForGridPlan type for details
+ * - will migrate to data-store once dependencies are resolved (when site & plans data-stores more complete)
  */
 const usePricingMetaForGridPlans: UsePricingMetaForGridPlans = ( {
 	planSlugs,

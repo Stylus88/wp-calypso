@@ -18,11 +18,13 @@ export default function useIsLargeCurrency( { planSlugs, returnMonthly = true }:
 	const { gridPlansIndex } = usePlansGridContext();
 
 	return planSlugs.some( ( planSlug ) => {
-		const { pricing } = gridPlansIndex[ planSlug ];
+		const {
+			pricing: { originalPrice, discountedPrice },
+		} = gridPlansIndex[ planSlug ];
 
 		return [
-			pricing.originalPrice[ returnMonthly ? 'monthly' : 'full' ],
-			pricing.discountedPrice[ returnMonthly ? 'monthly' : 'full' ],
+			originalPrice[ returnMonthly ? 'monthly' : 'full' ],
+			discountedPrice[ returnMonthly ? 'monthly' : 'full' ],
 		].some( ( price ) => price && price.toString().length > LARGE_CURRENCY_CHAR_THRESHOLD );
 	} );
 }

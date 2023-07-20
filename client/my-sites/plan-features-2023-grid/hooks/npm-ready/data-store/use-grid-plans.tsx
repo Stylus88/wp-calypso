@@ -22,7 +22,6 @@ import useHighlightLabels from './use-highlight-labels';
 import usePlansFromTypes from './use-plans-from-types';
 import type { PlanSlug, FeatureObject } from '@automattic/calypso-products';
 import type { PricedAPIPlan } from '@automattic/data-stores';
-import type { UsePricingMetaForGridPlans } from 'calypso/my-sites/plan-features-2023-grid';
 
 // TODO clk: move to plans data store
 export type TransformedFeatureObject = FeatureObject & {
@@ -31,7 +30,7 @@ export type TransformedFeatureObject = FeatureObject & {
 };
 
 // TODO clk: move to plans data store
-export interface PlanFeatures {
+export interface PlanFeaturesForGridPlan {
 	features: TransformedFeatureObject[];
 	jpFeatures: TransformedFeatureObject[];
 }
@@ -51,6 +50,30 @@ export interface PricingMetaForGridPlan {
 		full: number | null;
 	};
 }
+
+export type UsePlanFeaturesForGridPlans = ( {
+	planSlugs,
+	intent,
+	isGlobalStylesOnPersonal,
+	selectedFeature,
+}: {
+	planSlugs: PlanSlug[];
+	intent?: PlansIntent;
+	isGlobalStylesOnPersonal?: boolean;
+	selectedFeature?: string | null;
+} ) => { [ planSlug: string ]: PlanFeaturesForGridPlan };
+
+export type UsePricedAPIPlans = ( { planSlugs }: { planSlugs: PlanSlug[] } ) => {
+	[ planSlug: string ]: PricedAPIPlan | null | undefined;
+};
+
+export type UsePricingMetaForGridPlans = ( {
+	planSlugs,
+	withoutProRatedCredits,
+}: {
+	planSlugs: PlanSlug[];
+	withoutProRatedCredits?: boolean;
+} ) => { [ planSlug: string ]: PricingMetaForGridPlan };
 
 // TODO clk: move to types. will consume plan properties
 export type GridPlan = {
@@ -86,24 +109,10 @@ export type PlansIntent =
 	| 'default';
 
 interface Props {
-	// usePlanFeatures is intermediate until plan features are ported to @automattic/calypso-products and be queried from there
-	usePlanFeatures: ( {
-		planSlugs,
-		intent,
-		isGlobalStylesOnPersonal,
-		selectedFeature,
-	}: {
-		planSlugs: PlanSlug[];
-		intent?: PlansIntent;
-		isGlobalStylesOnPersonal?: boolean;
-		selectedFeature?: string | null;
-	} ) => Record< PlanSlug, PlanFeatures >;
+	// usePlanFeaturesForGridPlans is intermediately here until plan features are ported to @automattic/calypso-products and be queried from there
+	usePlanFeaturesForGridPlans: UsePlanFeaturesForGridPlans;
 	// API plans will be ported to data store and be queried from there
-	usePricedAPIPlans: ( {
-		planSlugs,
-	}: {
-		planSlugs: PlanSlug[];
-	} ) => Record< PlanSlug, PricedAPIPlan | null >;
+	usePricedAPIPlans: UsePricedAPIPlans;
 	usePricingMetaForGridPlans: UsePricingMetaForGridPlans;
 	selectedFeature?: string | null;
 	term?: ( typeof TERMS_LIST )[ number ]; // defaults to monthly
@@ -197,7 +206,7 @@ const usePlanTypesWithIntent = ( {
 
 // TODO clk: move to plans data store
 const useGridPlans = ( {
-	usePlanFeatures,
+	usePlanFeaturesForGridPlans,
 	usePricedAPIPlans,
 	usePricingMetaForGridPlans,
 	term = TERM_MONTHLY,
@@ -240,7 +249,7 @@ const useGridPlans = ( {
 	} );
 
 	// TODO: planFeatures to be queried from @automattic/calypso-products package
-	const planFeatures = usePlanFeatures( {
+	const planFeatures = usePlanFeaturesForGridPlans( {
 		planSlugs: availablePlanSlugs,
 		intent,
 		isGlobalStylesOnPersonal,
