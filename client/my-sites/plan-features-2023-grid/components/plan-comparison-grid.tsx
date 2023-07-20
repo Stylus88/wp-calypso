@@ -489,10 +489,7 @@ const PlanComparisonGridHeader = ( {
 	selectedPlan,
 }: PlanComparisonGridHeaderProps ) => {
 	const allVisible = visibleGridPlans.length === displayedGridPlans.length;
-	const isLargeCurrency = useIsLargeCurrency( {
-		planSlugs: displayedGridPlans.map( ( { planSlug } ) => planSlug ),
-		siteId,
-	} );
+	const isLargeCurrency = useIsLargeCurrency( { gridPlans: displayedGridPlans } );
 	const isPlanUpgradeCreditEligible = useIsPlanUpgradeCreditVisible(
 		siteId ?? 0,
 		displayedGridPlans.map( ( { planSlug } ) => planSlug )

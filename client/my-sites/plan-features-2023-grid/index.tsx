@@ -242,103 +242,6 @@ export class PlanFeatures2023Grid extends Component<
 		}
 	}
 
-	render() {
-		const {
-			isInSignup,
-			planTypeSelectorProps,
-			intervalType,
-			isLaunchPage,
-			flowName,
-			currentSitePlanSlug,
-			manageHref,
-			canUserPurchasePlan,
-			translate,
-			selectedSiteSlug,
-			hidePlansFeatureComparison,
-			siteId,
-			selectedPlan,
-			selectedFeature,
-			intent,
-			isGlobalStylesOnPersonal,
-			gridPlansForFeaturesGrid,
-			gridPlansForComparisonGrid,
-			showLegacyStorageFeature,
-			usePricingMetaForGridPlans,
-		} = this.props;
-
-		return (
-			<div className="plans-wrapper">
-				<QueryActivePromotions />
-				<div className="plan-features">
-					<PlansGridContextProvider
-						intent={ intent }
-						gridPlans={ gridPlansForFeaturesGrid }
-						usePricingMetaForGridPlans={ usePricingMetaForGridPlans }
-					>
-						<div className="plan-features-2023-grid__content">
-							<div>
-								<div className="plan-features-2023-grid__desktop-view">
-									{ this.renderTable( gridPlansForFeaturesGrid ) }
-								</div>
-								<div className="plan-features-2023-grid__tablet-view">
-									{ this.renderTabletView() }
-								</div>
-								<div className="plan-features-2023-grid__mobile-view">
-									{ this.renderMobileView() }
-								</div>
-							</div>
-						</div>
-					</PlansGridContextProvider>
-				</div>
-				{ ! hidePlansFeatureComparison && (
-					<div className="plan-features-2023-grid__toggle-plan-comparison-button-container">
-						<Button onClick={ this.toggleShowPlansComparisonGrid }>
-							{ this.state.showPlansComparisonGrid
-								? translate( 'Hide comparison' )
-								: translate( 'Compare plans' ) }
-						</Button>
-					</div>
-				) }
-				{ ! hidePlansFeatureComparison && this.state.showPlansComparisonGrid ? (
-					<div
-						ref={ this.plansComparisonGridContainerRef }
-						className="plan-features-2023-grid__plan-comparison-grid-container"
-					>
-						<PlansGridContextProvider
-							intent={ intent }
-							gridPlans={ gridPlansForComparisonGrid }
-							usePricingMetaForGridPlans={ usePricingMetaForGridPlans }
-						>
-							<PlanComparisonGrid
-								planTypeSelectorProps={ planTypeSelectorProps }
-								gridPlansForComparisonGrid={ gridPlansForComparisonGrid }
-								intervalType={ intervalType }
-								isInSignup={ isInSignup }
-								isLaunchPage={ isLaunchPage }
-								flowName={ flowName }
-								currentSitePlanSlug={ currentSitePlanSlug }
-								manageHref={ manageHref }
-								canUserPurchasePlan={ canUserPurchasePlan }
-								selectedSiteSlug={ selectedSiteSlug }
-								onUpgradeClick={ this.handleUpgradeClick }
-								siteId={ siteId }
-								selectedPlan={ selectedPlan }
-								selectedFeature={ selectedFeature }
-								isGlobalStylesOnPersonal={ isGlobalStylesOnPersonal }
-								showLegacyStorageFeature={ showLegacyStorageFeature }
-							/>
-							<div className="plan-features-2023-grid__toggle-plan-comparison-button-container">
-								<Button onClick={ this.toggleShowPlansComparisonGrid }>
-									{ translate( 'Hide comparison' ) }
-								</Button>
-							</div>
-						</PlansGridContextProvider>
-					</div>
-				) : null }
-			</div>
-		);
-	}
-
 	renderTable( renderedGridPlans: GridPlan[] ) {
 		const { translate } = this.props;
 		const tableClasses = classNames(
@@ -823,13 +726,109 @@ export class PlanFeatures2023Grid extends Component<
 			);
 		} );
 	}
+
+	render() {
+		const {
+			isInSignup,
+			planTypeSelectorProps,
+			intervalType,
+			isLaunchPage,
+			flowName,
+			currentSitePlanSlug,
+			manageHref,
+			canUserPurchasePlan,
+			translate,
+			selectedSiteSlug,
+			hidePlansFeatureComparison,
+			siteId,
+			selectedPlan,
+			selectedFeature,
+			intent,
+			isGlobalStylesOnPersonal,
+			gridPlansForFeaturesGrid,
+			gridPlansForComparisonGrid,
+			showLegacyStorageFeature,
+			usePricingMetaForGridPlans,
+		} = this.props;
+
+		return (
+			<div className="plans-wrapper">
+				<QueryActivePromotions />
+				<div className="plan-features">
+					<PlansGridContextProvider
+						intent={ intent }
+						gridPlans={ gridPlansForFeaturesGrid }
+						usePricingMetaForGridPlans={ usePricingMetaForGridPlans }
+					>
+						<div className="plan-features-2023-grid__content">
+							<div>
+								<div className="plan-features-2023-grid__desktop-view">
+									{ this.renderTable( gridPlansForFeaturesGrid ) }
+								</div>
+								<div className="plan-features-2023-grid__tablet-view">
+									{ this.renderTabletView() }
+								</div>
+								<div className="plan-features-2023-grid__mobile-view">
+									{ this.renderMobileView() }
+								</div>
+							</div>
+						</div>
+					</PlansGridContextProvider>
+				</div>
+				{ ! hidePlansFeatureComparison && (
+					<div className="plan-features-2023-grid__toggle-plan-comparison-button-container">
+						<Button onClick={ this.toggleShowPlansComparisonGrid }>
+							{ this.state.showPlansComparisonGrid
+								? translate( 'Hide comparison' )
+								: translate( 'Compare plans' ) }
+						</Button>
+					</div>
+				) }
+				{ ! hidePlansFeatureComparison && this.state.showPlansComparisonGrid ? (
+					<div
+						ref={ this.plansComparisonGridContainerRef }
+						className="plan-features-2023-grid__plan-comparison-grid-container"
+					>
+						<PlansGridContextProvider
+							intent={ intent }
+							gridPlans={ gridPlansForComparisonGrid }
+							usePricingMetaForGridPlans={ usePricingMetaForGridPlans }
+						>
+							<PlanComparisonGrid
+								planTypeSelectorProps={ planTypeSelectorProps }
+								gridPlansForComparisonGrid={ gridPlansForComparisonGrid }
+								intervalType={ intervalType }
+								isInSignup={ isInSignup }
+								isLaunchPage={ isLaunchPage }
+								flowName={ flowName }
+								currentSitePlanSlug={ currentSitePlanSlug }
+								manageHref={ manageHref }
+								canUserPurchasePlan={ canUserPurchasePlan }
+								selectedSiteSlug={ selectedSiteSlug }
+								onUpgradeClick={ this.handleUpgradeClick }
+								siteId={ siteId }
+								selectedPlan={ selectedPlan }
+								selectedFeature={ selectedFeature }
+								isGlobalStylesOnPersonal={ isGlobalStylesOnPersonal }
+								showLegacyStorageFeature={ showLegacyStorageFeature }
+							/>
+							<div className="plan-features-2023-grid__toggle-plan-comparison-button-container">
+								<Button onClick={ this.toggleShowPlansComparisonGrid }>
+									{ translate( 'Hide comparison' ) }
+								</Button>
+							</div>
+						</PlansGridContextProvider>
+					</div>
+				) : null }
+			</div>
+		);
+	}
 }
 
 const withIsLargeCurrency = ( Component: LocalizedComponent< typeof PlanFeatures2023Grid > ) => {
 	return function ( props: PlanFeatures2023GridType ) {
 		const isLargeCurrency = useIsLargeCurrency( {
-			planSlugs: props.gridPlansForFeaturesGrid.map( ( gridPlan ) => gridPlan.planSlug ),
-			siteId: props.siteId,
+			gridPlans: props.gridPlansForFeaturesGrid,
 		} );
 		return <Component { ...props } isLargeCurrency={ isLargeCurrency } />;
 	};

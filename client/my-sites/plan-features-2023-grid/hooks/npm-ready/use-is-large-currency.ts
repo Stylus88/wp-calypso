@@ -1,12 +1,10 @@
-import { usePlansGridContext } from '../../grid-context';
-import type { PlanSlug } from '@automattic/calypso-products';
+import type { GridPlan } from 'calypso/my-sites/plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans';
 
 const LARGE_CURRENCY_CHAR_THRESHOLD = 5;
 
 interface Props {
-	planSlugs: PlanSlug[];
+	gridPlans: GridPlan[];
 	returnMonthly?: boolean;
-	siteId?: number | null;
 }
 
 /**
@@ -14,13 +12,11 @@ interface Props {
  * of any of the plan slugs exceeds 5 characters.
  * This is primarily used for lowering the font-size of "large" display prices.
  */
-export default function useIsLargeCurrency( { planSlugs, returnMonthly = true }: Props ): boolean {
-	const { gridPlansIndex } = usePlansGridContext();
-
-	return planSlugs.some( ( planSlug ) => {
+export default function useIsLargeCurrency( { gridPlans, returnMonthly = true }: Props ): boolean {
+	return gridPlans.some( ( gridPlan ) => {
 		const {
 			pricing: { originalPrice, discountedPrice },
-		} = gridPlansIndex[ planSlug ];
+		} = gridPlan;
 
 		return [
 			originalPrice[ returnMonthly ? 'monthly' : 'full' ],
