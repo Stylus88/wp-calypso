@@ -726,7 +726,7 @@ export const PlanComparisonGrid = ( {
 	selectedFeature,
 	isGlobalStylesOnPersonal,
 	showLegacyStorageFeature,
-} ) => {
+}: PlanComparisonGridProps ) => {
 	const translate = useTranslate();
 	const isMonthly = intervalType === 'monthly';
 	const { gridPlans, allFeaturesList } = usePlansGridContext();

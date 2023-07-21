@@ -116,6 +116,7 @@ interface Props {
 	usePlanUpgradeabilityCheck?: ( { planSlugs }: { planSlugs: PlanSlug[] } ) => {
 		[ key: string ]: boolean;
 	};
+	showLegacyStorageFeature?: boolean;
 	// for AB Test experiment:
 	isGlobalStylesOnPersonal?: boolean;
 }
@@ -208,6 +209,7 @@ const useGridPlans = ( {
 	hideEnterprisePlan,
 	isInSignup,
 	usePlanUpgradeabilityCheck,
+	showLegacyStorageFeature,
 	isGlobalStylesOnPersonal,
 }: Props ): GridPlan[] => {
 	const availablePlanSlugs = usePlansFromTypes( {
@@ -278,7 +280,7 @@ const useGridPlans = ( {
 				: planObject?.product_name_short ?? null;
 		const storageOptions =
 			( planConstantObj.get2023PricingGridSignupStorageOptions &&
-				planConstantObj.get2023PricingGridSignupStorageOptions() ) ||
+				planConstantObj.get2023PricingGridSignupStorageOptions( showLegacyStorageFeature ) ) ||
 			[];
 		// cartItemForPlan done in line here as it's a small piece of logic to pass another selector for
 		const cartItemForPlan =

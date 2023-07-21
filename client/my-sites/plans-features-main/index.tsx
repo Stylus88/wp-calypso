@@ -339,6 +339,7 @@ const PlansFeaturesMain = ( {
 		sitePlanSlug,
 		hideEnterprisePlan,
 		usePlanUpgradeabilityCheck,
+		showLegacyStorageFeature,
 		isGlobalStylesOnPersonal: globalStylesInPersonalPlan,
 	} );
 
