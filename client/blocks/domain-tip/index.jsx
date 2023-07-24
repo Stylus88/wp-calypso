@@ -78,6 +78,7 @@ class DomainTip extends Component {
 				<QueryDomainsSuggestions { ...this.props.queryObject } />
 				<UpsellNudge
 					event={ `domain_tip_${ this.props.event }` }
+					dismissPreferenceName="calypso_domain_tip_dismiss"
 					tracksImpressionName="calypso_upgrade_nudge_impression"
 					tracksClickName="calypso_upgrade_nudge_cta_click"
 					feature={ FEATURE_CUSTOM_DOMAIN }
