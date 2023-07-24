@@ -314,6 +314,7 @@ export class Banner extends Component {
 					preferenceName={ dismissPreferenceName }
 					temporary={ dismissTemporary }
 					onClick={ this.handleDismiss }
+					href={ ( disableHref || callToAction ) && ! forceHref ? null : this.getHref() }
 				>
 					{ this.getIcon() }
 					{ this.getContent() }

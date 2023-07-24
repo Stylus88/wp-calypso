@@ -9,7 +9,15 @@ import { isCardDismissed } from './selectors';
 
 import './style.scss';
 
-function DismissibleCard( { className, highlight, temporary, onClick, preferenceName, children } ) {
+function DismissibleCard( {
+	className,
+	highlight,
+	temporary,
+	onClick,
+	preferenceName,
+	href,
+	children,
+} ) {
 	const isDismissed = useSelector( isCardDismissed( preferenceName ) );
 	const hasReceivedPreferences = useSelector( hasReceivedRemotePreferences );
 	const dispatch = useDispatch();
@@ -25,7 +33,7 @@ function DismissibleCard( { className, highlight, temporary, onClick, preference
 	}
 
 	return (
-		<Card className={ className } highlight={ highlight }>
+		<Card className={ className } highlight={ highlight } href={ href }>
 			<QueryPreferences />
 			<button
 				className="dismissible-card__close-button"
