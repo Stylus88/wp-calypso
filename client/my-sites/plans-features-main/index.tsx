@@ -32,6 +32,8 @@ import { useSiteGlobalStylesStatus } from 'calypso/state/sites/hooks/use-site-gl
 import { getCurrentPlan } from 'calypso/state/sites/plans/selectors';
 import { getSitePlanSlug, getSiteSlug } from 'calypso/state/sites/selectors';
 import useGridPlans from '../plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans';
+import usePlanFeaturesForGridPlans from '../plan-features-2023-grid/hooks/npm-ready/data-store/use-plan-features-for-grid-plans';
+import useRestructuredPlanFeaturesForComparisonGrid from '../plan-features-2023-grid/hooks/npm-ready/data-store/use-restructured-plan-features-for-comparison-grid';
 import { FreePlanPaidDomainDialog } from './components/free-plan-paid-domain-dialog';
 import usePricedAPIPlans from './hooks/data-store/use-priced-api-plans';
 import usePricingMetaForGridPlans from './hooks/data-store/use-pricing-meta-for-grid-plans';
@@ -343,6 +345,24 @@ const PlansFeaturesMain = ( {
 		isGlobalStylesOnPersonal: globalStylesInPersonalPlan,
 	} );
 
+	const planFeaturesForFeaturesGrid = usePlanFeaturesForGridPlans( {
+		planSlugs: gridPlans.map( ( gridPlan ) => gridPlan.planSlug ),
+		allFeaturesList: FEATURES_LIST,
+		intent,
+		isGlobalStylesOnPersonal: globalStylesInPersonalPlan,
+		selectedFeature,
+		showLegacyStorageFeature,
+	} );
+
+	const planFeaturesForComparisonGrid = useRestructuredPlanFeaturesForComparisonGrid( {
+		planSlugs: gridPlans.map( ( gridPlan ) => gridPlan.planSlug ),
+		allFeaturesList: FEATURES_LIST,
+		intent,
+		isGlobalStylesOnPersonal: globalStylesInPersonalPlan,
+		selectedFeature,
+		showLegacyStorageFeature,
+	} );
+
 	// TODO: `useFilterPlansForPlanFeatures` should gradually deprecate and whatever remains to fall into the `useGridPlans` hook
 	const filteredPlansForPlanFeatures =
 		useFilterPlansForPlanFeatures( {
@@ -355,11 +375,23 @@ const PlansFeaturesMain = ( {
 			hideBusinessPlan,
 			hideEcommercePlan,
 		} ) || null;
+
 	// we need all the available plans for comparison grid (these should extend into plans-ui data store selectors)
-	const gridPlansForComparisonGrid = filteredPlansForPlanFeatures;
+	const gridPlansForComparisonGrid = filteredPlansForPlanFeatures.map( ( gridPlan ) => {
+		return {
+			...gridPlan,
+			features: { ...planFeaturesForComparisonGrid[ gridPlan.planSlug ] },
+		} as GridPlan;
+	} );
+
 	// we neeed only the visible ones for features grid (these should extend into plans-ui data store selectors)
 	const gridPlansForFeaturesGrid = filteredPlansForPlanFeatures.reduce( ( acc, gridPlan ) => {
-		return [ ...acc, ...( gridPlan.isVisible ? [ gridPlan ] : [] ) ];
+		return [
+			...acc,
+			...( gridPlan.isVisible
+				? [ { ...gridPlan, features: planFeaturesForFeaturesGrid[ gridPlan.planSlug ] } ]
+				: [] ),
+		];
 	}, [] as GridPlan[] );
 
 	// If advertising plans for a certain feature, ensure user has pressed "View all plans" before they can see others

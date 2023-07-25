@@ -8,7 +8,7 @@ import {
 import type { GridPlan } from 'calypso/my-sites/plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans';
 
 interface Props {
-	plans: GridPlan[];
+	plans: Omit< GridPlan, 'features' >[];
 	isDisplayingPlansNeededForFeature: boolean;
 	selectedPlan?: string;
 	hideFreePlan?: boolean;

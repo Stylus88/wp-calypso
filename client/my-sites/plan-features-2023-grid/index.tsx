@@ -340,7 +340,9 @@ export class PlanFeatures2023Grid extends Component<
 						key={ `${ gridPlan.planSlug }-${ index }` }
 						expanded={
 							selectedFeature &&
-							gridPlan.features.some( ( feature ) => feature.getSlug() === selectedFeature )
+							gridPlan.features.wpcomFeatures.some(
+								( feature ) => feature.getSlug() === selectedFeature
+							)
 						}
 					>
 						{ this.renderPreviousFeaturesIncludedTitle( [ gridPlan ], {
@@ -660,53 +662,55 @@ export class PlanFeatures2023Grid extends Component<
 				! isWooExpressPlusPlan( gridPlan.planSlug )
 		);
 
-		return plansWithFeatures.map( ( { planSlug, features, jpFeatures }, mapIndex ) => {
-			return (
-				<Container
-					key={ `${ planSlug }-${ mapIndex }` }
-					isMobile={ options?.isMobile }
-					className="plan-features-2023-grid__table-item"
-				>
-					<PlanFeatures2023GridFeatures
-						features={ features }
-						planSlug={ planSlug }
-						paidDomainName={ paidDomainName }
-						hideUnavailableFeatures={ hideUnavailableFeatures }
-						selectedFeature={ selectedFeature }
-					/>
-					{ jpFeatures.length !== 0 && (
-						<div className="plan-features-2023-grid__jp-logo" key="jp-logo">
-							<Plans2023Tooltip
-								text={ translate(
-									'Security, performance and growth tools made by the WordPress experts.'
-								) }
-							>
-								<JetpackLogo size={ 16 } />
-							</Plans2023Tooltip>
-						</div>
-					) }
-					<PlanFeatures2023GridFeatures
-						features={ jpFeatures }
-						planSlug={ planSlug }
-						paidDomainName={ paidDomainName }
-						hideUnavailableFeatures={ hideUnavailableFeatures }
-					/>
-				</Container>
-			);
-		} );
+		return plansWithFeatures.map(
+			( { planSlug, features: { wpcomFeatures, jetpackFeatures } }, mapIndex ) => {
+				return (
+					<Container
+						key={ `${ planSlug }-${ mapIndex }` }
+						isMobile={ options?.isMobile }
+						className="plan-features-2023-grid__table-item"
+					>
+						<PlanFeatures2023GridFeatures
+							features={ wpcomFeatures }
+							planSlug={ planSlug }
+							paidDomainName={ paidDomainName }
+							hideUnavailableFeatures={ hideUnavailableFeatures }
+							selectedFeature={ selectedFeature }
+						/>
+						{ jetpackFeatures.length !== 0 && (
+							<div className="plan-features-2023-grid__jp-logo" key="jp-logo">
+								<Plans2023Tooltip
+									text={ translate(
+										'Security, performance and growth tools made by the WordPress experts.'
+									) }
+								>
+									<JetpackLogo size={ 16 } />
+								</Plans2023Tooltip>
+							</div>
+						) }
+						<PlanFeatures2023GridFeatures
+							features={ jetpackFeatures }
+							planSlug={ planSlug }
+							paidDomainName={ paidDomainName }
+							hideUnavailableFeatures={ hideUnavailableFeatures }
+						/>
+					</Container>
+				);
+			}
+		);
 	}
 
 	renderPlanStorageOptions( renderedGridPlans: GridPlan[], options?: PlanRowOptions ) {
 		const { translate } = this.props;
 
-		return renderedGridPlans.map( ( { planSlug, storageOptions } ) => {
-			const storageJSX = storageOptions.map( ( storageFeature: string ) => {
-				if ( storageFeature.length <= 0 ) {
+		return renderedGridPlans.map( ( { planSlug, features: { storageOptions } } ) => {
+			const storageJSX = storageOptions.map( ( storageFeature ) => {
+				if ( storageFeature.getSlug().length <= 0 ) {
 					return;
 				}
 				return (
 					<div className="plan-features-2023-grid__storage-buttons" key={ planSlug }>
-						{ getStorageStringFromFeature( storageFeature ) }
+						{ getStorageStringFromFeature( storageFeature.getSlug() ) }
 					</div>
 				);
 			} );

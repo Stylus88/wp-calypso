@@ -26,7 +26,7 @@ import PlanTypeSelector, {
 	PlanTypeSelectorProps,
 } from 'calypso/my-sites/plans-features-main/components/plan-type-selector';
 import { usePlansGridContext } from '../grid-context';
-import { GridPlan } from '../hooks/npm-ready/data-store/use-grid-plans';
+import { GridPlan, TransformedFeatureObject } from '../hooks/npm-ready/data-store/use-grid-plans';
 import useHighlightAdjacencyMatrix from '../hooks/npm-ready/use-highlight-adjacency-matrix';
 import useIsLargeCurrency from '../hooks/npm-ready/use-is-large-currency';
 import { sortPlans } from '../lib/sort-plan-properties';
@@ -346,13 +346,7 @@ type PlanComparisonGridHeaderCellProps = PlanComparisonGridHeaderProps & {
 	planSlug: PlanSlug;
 };
 
-type RestructuredFeatures = {
-	featureMap: Record< string, Set< string > >;
-	conditionalFeatureMap: Record< string, Set< string > >;
-	planStorageOptionsMap: Record< string, string >;
-};
-
-type RestructuredFootnotes = {
+type PlanFeatureFootnotes = {
 	footnoteList: string[];
 	footnotesByFeature: Record< Feature, number >;
 };
@@ -532,26 +526,39 @@ const PlanComparisonGridFeatureGroupRowCell: React.FunctionComponent< {
 	feature?: FeatureObject;
 	allJetpackFeatures: Set< string >;
 	visibleGridPlans: GridPlan[];
-	restructuredFeatures: RestructuredFeatures;
 	planSlug: PlanSlug;
 	isStorageFeature: boolean;
 	flowName?: string | null;
-} > = ( { feature, visibleGridPlans, restructuredFeatures, planSlug, isStorageFeature } ) => {
-	const { gridPlansIndex, allFeaturesList } = usePlansGridContext();
+	intervalType?: string;
+} > = ( { feature, visibleGridPlans, planSlug, isStorageFeature, intervalType } ) => {
+	const { gridPlansIndex } = usePlansGridContext();
 	const translate = useTranslate();
 	const highlightAdjacencyMatrix = useHighlightAdjacencyMatrix( {
 		renderedPlans: visibleGridPlans.map( ( { planSlug } ) => planSlug ),
 	} );
 	const featureSlug = feature?.getSlug();
+
 	const hasFeature =
 		isStorageFeature ||
-		( featureSlug ? restructuredFeatures.featureMap[ planSlug ].has( featureSlug ) : false );
+		( featureSlug
+			? [
+					...gridPlansIndex[ planSlug ].features.wpcomFeatures,
+					...gridPlansIndex[ planSlug ].features.jetpackFeatures,
+			  ]
+					.filter( ( feature ) =>
+						'monthly' === intervalType ? ! feature.availableOnlyForAnnualPlans : true
+					)
+					.some( ( feature ) => feature.getSlug() === featureSlug )
+			: false );
+
 	const hasConditionalFeature = featureSlug
-		? restructuredFeatures.conditionalFeatureMap[ planSlug ].has( featureSlug )
+		? gridPlansIndex[ planSlug ].features.conditionalFeatures?.some(
+				( feature ) => feature.getSlug() === featureSlug
+		  )
 		: false;
-	const [ storageFeature ] = getPlanFeaturesObject( allFeaturesList, [
-		restructuredFeatures.planStorageOptionsMap[ planSlug ],
-	] );
+
+	const [ storageFeature ] = gridPlansIndex[ planSlug ].features.storageOptions;
+
 	const cellClasses = classNames(
 		'plan-comparison-grid__feature-group-row-cell',
 		'plan-comparison-grid__plan',
@@ -566,8 +573,8 @@ const PlanComparisonGridFeatureGroupRowCell: React.FunctionComponent< {
 			'is-only-highlight': highlightAdjacencyMatrix[ planSlug ]?.isOnlyHighlight,
 		}
 	);
-	const planPropertiesObj = gridPlansIndex[ planSlug ];
-	const planPaymentTransactionFees = planPropertiesObj?.features?.find(
+	const gridPlan = gridPlansIndex[ planSlug ];
+	const planPaymentTransactionFees = gridPlan?.features.wpcomFeatures?.find(
 		( feature ) => feature?.getFeatureGroup?.() === FEATURE_GROUP_PAYMENT_TRANSACTION_FEES
 	);
 
@@ -633,32 +640,32 @@ const PlanComparisonGridFeatureGroupRowCell: React.FunctionComponent< {
 };
 
 const PlanComparisonGridFeatureGroupRow: React.FunctionComponent< {
-	feature?: FeatureObject;
+	feature?: FeatureObject | TransformedFeatureObject;
 	isHiddenInMobile: boolean;
 	allJetpackFeatures: Set< string >;
 	visibleGridPlans: GridPlan[];
-	restructuredFeatures: RestructuredFeatures;
-	restructuredFootnotes: RestructuredFootnotes;
+	planFeatureFootnotes: PlanFeatureFootnotes;
 	isStorageFeature: boolean;
 	flowName?: string | null;
 	isHighlighted: boolean;
+	intervalType?: string;
 } > = ( {
 	feature,
 	isHiddenInMobile,
 	allJetpackFeatures,
 	visibleGridPlans,
-	restructuredFeatures,
-	restructuredFootnotes,
+	planFeatureFootnotes,
 	isStorageFeature,
 	flowName,
 	isHighlighted,
+	intervalType,
 } ) => {
 	const translate = useTranslate();
 	const rowClasses = classNames( 'plan-comparison-grid__feature-group-row', {
 		'is-storage-feature': isStorageFeature,
 	} );
-	const featureSlug = feature?.getSlug() || '';
-	const footnote = restructuredFootnotes?.footnotesByFeature?.[ featureSlug ];
+	const featureSlug = feature?.getSlug() ?? '';
+	const footnote = planFeatureFootnotes?.footnotesByFeature?.[ featureSlug ];
 
 	return (
 		<Row
@@ -699,10 +706,10 @@ const PlanComparisonGridFeatureGroupRow: React.FunctionComponent< {
 					feature={ feature }
 					allJetpackFeatures={ allJetpackFeatures }
 					visibleGridPlans={ visibleGridPlans }
-					restructuredFeatures={ restructuredFeatures }
 					planSlug={ planSlug }
 					isStorageFeature={ isStorageFeature }
 					flowName={ flowName }
+					intervalType={ intervalType }
 				/>
 			) ) }
 		</Row>
@@ -724,11 +731,8 @@ export const PlanComparisonGrid = ( {
 	planActionOverrides,
 	selectedPlan,
 	selectedFeature,
-	isGlobalStylesOnPersonal,
-	showLegacyStorageFeature,
 }: PlanComparisonGridProps ) => {
 	const translate = useTranslate();
-	const isMonthly = intervalType === 'monthly';
 	const { gridPlans, allFeaturesList } = usePlansGridContext();
 
 	// Check to see if we have at least one Woo Express plan we're comparing.
@@ -795,7 +799,7 @@ export const PlanComparisonGrid = ( {
 		setVisiblePlans( newVisiblePlans );
 	}, [ isLargeBreakpoint, isMediumBreakpoint, isSmallBreakpoint, displayedGridPlans, isInSignup ] );
 
-	const restructuredFootnotes = useMemo( () => {
+	const planFeatureFootnotes = useMemo( () => {
 		// This is the main list of all footnotes. It is displayed at the bottom of the comparison grid.
 		const footnoteList: string[] = [];
 		// This is a map of features to the index of the footnote in the main list of footnotes.
@@ -827,57 +831,6 @@ export const PlanComparisonGrid = ( {
 			footnotesByFeature,
 		};
 	}, [ featureGroupMap ] );
-
-	const restructuredFeatures = useMemo( () => {
-		let previousPlan = null;
-		const planFeatureMap: Record< string, Set< string > > = {};
-		const conditionalFeatureMap: Record< string, Set< string > > = {};
-		const planStorageOptionsMap: Record< string, string > = {};
-
-		for ( const gridPlan of gridPlans ) {
-			const { planSlug, planConstantObj } = gridPlan;
-
-			const wpcomFeatures = planConstantObj.get2023PlanComparisonFeatureOverride
-				? planConstantObj.get2023PlanComparisonFeatureOverride().slice()
-				: planConstantObj
-						.get2023PricingGridSignupWpcomFeatures?.( isGlobalStylesOnPersonal )
-						.slice() ?? [];
-
-			const jetpackFeatures = planConstantObj.get2023PlanComparisonJetpackFeatureOverride
-				? planConstantObj.get2023PlanComparisonJetpackFeatureOverride().slice()
-				: planConstantObj.get2023PricingGridSignupJetpackFeatures?.().slice() ?? [];
-
-			const annualOnlyFeatures = planConstantObj.getAnnualPlansOnlyFeatures?.() ?? [];
-
-			let featuresAvailable = isWooExpressPlan( planSlug )
-				? [ ...wpcomFeatures ]
-				: [ ...wpcomFeatures, ...jetpackFeatures ];
-			if ( isMonthly ) {
-				// Filter out features only available annually
-				featuresAvailable = featuresAvailable.filter(
-					( feature ) => ! annualOnlyFeatures.includes( feature )
-				);
-			}
-			planFeatureMap[ planSlug ] = new Set( featuresAvailable );
-
-			// Add previous plan feature
-			if ( previousPlan !== null ) {
-				planFeatureMap[ planSlug ] = new Set( [
-					...planFeatureMap[ planSlug ],
-					...planFeatureMap[ previousPlan ],
-				] );
-			}
-			previousPlan = planSlug;
-			const [ storageOption ] =
-				planConstantObj.get2023PricingGridSignupStorageOptions?.( showLegacyStorageFeature ) ?? [];
-			planStorageOptionsMap[ planSlug ] = storageOption;
-
-			conditionalFeatureMap[ planSlug ] = new Set(
-				planConstantObj.get2023PlanComparisonConditionalFeatures?.() ?? []
-			);
-		}
-		return { featureMap: planFeatureMap, planStorageOptionsMap, conditionalFeatureMap };
-	}, [ gridPlans, isGlobalStylesOnPersonal, showLegacyStorageFeature, isMonthly ] );
 
 	const allJetpackFeatures = useMemo( () => {
 		const jetpackFeatures = new Set(
@@ -980,11 +933,11 @@ export const PlanComparisonGrid = ( {
 									isHiddenInMobile={ isHiddenInMobile }
 									allJetpackFeatures={ allJetpackFeatures }
 									visibleGridPlans={ visibleGridPlans }
-									restructuredFeatures={ restructuredFeatures }
-									restructuredFootnotes={ restructuredFootnotes }
+									planFeatureFootnotes={ planFeatureFootnotes }
 									isStorageFeature={ false }
 									flowName={ flowName }
 									isHighlighted={ feature.getSlug() === selectedFeature }
+									intervalType={ intervalType }
 								/>
 							) ) }
 							{ featureGroup.slug === FEATURE_GROUP_ESSENTIAL_FEATURES ? (
@@ -993,11 +946,11 @@ export const PlanComparisonGrid = ( {
 									isHiddenInMobile={ isHiddenInMobile }
 									allJetpackFeatures={ allJetpackFeatures }
 									visibleGridPlans={ visibleGridPlans }
-									restructuredFeatures={ restructuredFeatures }
-									restructuredFootnotes={ restructuredFootnotes }
+									planFeatureFootnotes={ planFeatureFootnotes }
 									isStorageFeature={ true }
 									flowName={ flowName }
 									isHighlighted={ false }
+									intervalType={ intervalType }
 								/>
 							) : null }
 						</div>
@@ -1023,10 +976,10 @@ export const PlanComparisonGrid = ( {
 			</Grid>
 
 			<div className="plan-comparison-grid__footer">
-				{ restructuredFootnotes?.footnoteList && (
+				{ planFeatureFootnotes?.footnoteList && (
 					<FeatureFootnotes>
 						<ol>
-							{ restructuredFootnotes?.footnoteList?.map( ( footnote, index ) => {
+							{ planFeatureFootnotes?.footnoteList?.map( ( footnote, index ) => {
 								return <li key={ `${ footnote }-${ index }` }>{ footnote }</li>;
 							} ) }
 						</ol>
