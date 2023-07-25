@@ -3,7 +3,7 @@ import {
 	isPremiumPlan,
 	isPersonalPlan,
 	planLevelsMatch,
-	PlanSlug,
+	type PlanSlug,
 } from '@automattic/calypso-products';
 import { useTranslate } from 'i18n-calypso';
 import { isPopularPlan } from './is-popular-plan';

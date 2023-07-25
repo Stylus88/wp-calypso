@@ -14,14 +14,15 @@ import {
 	applyTestFiltersToPlansList,
 	isMonthly,
 	isWpcomEnterpriseGridPlan,
-	FilteredPlan,
 	TERM_MONTHLY,
 	isWpComFreePlan,
-	FeatureList,
+	type FeatureList,
+	type PlanSlug,
+	type FeatureObject,
+	type FilteredPlan,
 } from '@automattic/calypso-products';
 import useHighlightLabels from './use-highlight-labels';
 import usePlansFromTypes from './use-plans-from-types';
-import type { PlanSlug, FeatureObject } from '@automattic/calypso-products';
 import type { PricedAPIPlan } from '@automattic/data-stores';
 
 // TODO clk: move to plans data store

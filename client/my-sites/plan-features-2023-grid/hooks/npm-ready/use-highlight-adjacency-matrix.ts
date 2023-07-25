@@ -1,5 +1,5 @@
-import { PlanSlug } from '@automattic/calypso-products';
 import { usePlansGridContext } from '../../grid-context';
+import type { PlanSlug } from '@automattic/calypso-products';
 
 type HighlightAdjacencyMatrix = {
 	[ planSlug in PlanSlug ]: {

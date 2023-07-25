@@ -1,9 +1,9 @@
 import {
 	applyTestFiltersToPlansList,
-	FeatureList,
 	isMonthly,
 	isWooExpressPlan,
-	PlanSlug,
+	type PlanSlug,
+	type FeatureList,
 } from '@automattic/calypso-products';
 import { useMemo } from 'react';
 import usePlanFeaturesForGridPlans from 'calypso/my-sites/plan-features-2023-grid/hooks/npm-ready/data-store/use-plan-features-for-grid-plans';

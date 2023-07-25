@@ -1,11 +1,6 @@
-import {
-	applyTestFiltersToPlansList,
-	FeatureList,
-	isMonthly,
-	PlanSlug,
-} from '@automattic/calypso-products';
+import { applyTestFiltersToPlansList, isMonthly } from '@automattic/calypso-products';
 import getPlanFeaturesObject from 'calypso/my-sites/plan-features-2023-grid/lib/get-plan-features-object';
-import type { FeatureObject } from '@automattic/calypso-products';
+import type { FeatureObject, FeatureList, PlanSlug } from '@automattic/calypso-products';
 import type {
 	TransformedFeatureObject,
 	PlanFeaturesForGridPlan,

@@ -1,10 +1,10 @@
-import { FeatureList } from '@automattic/calypso-products';
 import { createContext, useContext } from '@wordpress/element';
 import type {
 	GridPlan,
 	PlansIntent,
 	UsePricingMetaForGridPlans,
 } from './hooks/npm-ready/data-store/use-grid-plans';
+import type { FeatureList } from '@automattic/calypso-products';
 
 interface PlansGridContext {
 	intent?: PlansIntent;
