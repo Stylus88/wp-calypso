@@ -11,6 +11,7 @@ export interface Task {
 	actionDispatch?: () => void;
 	isLaunchTask?: boolean;
 	extra_data?: TaskExtraData;
+	order?: number;
 }
 
 export type LaunchpadChecklist = Task[];
