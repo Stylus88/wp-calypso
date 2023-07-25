@@ -1,4 +1,5 @@
 import { useSelector } from 'react-redux';
+import usePricedAPIPlans from 'calypso/my-sites/plans-features-main/hooks/data-store/use-priced-api-plans';
 import { getPlanPrices } from 'calypso/state/plans/selectors';
 import {
 	getSitePlanRawPrice,
@@ -6,7 +7,6 @@ import {
 } from 'calypso/state/sites/plans/selectors';
 import getSitePlanSlug from 'calypso/state/sites/selectors/get-site-plan-slug';
 import getSelectedSiteId from 'calypso/state/ui/selectors/get-selected-site-id';
-import usePricedAPIPlans from './use-priced-api-plans';
 import type { PlanSlug } from '@automattic/calypso-products';
 import type {
 	UsePricingMetaForGridPlans,
