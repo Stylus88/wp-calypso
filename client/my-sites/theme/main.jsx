@@ -742,8 +742,8 @@ class ThemeSheet extends Component {
 				disableHref={ url === '' }
 				icon="notice"
 				href={ url }
-				title={ translate( 'Paid themes cannot be purchased on staging sites' ) }
-				description={ translate( 'Subscribe to this premium theme on your production site.' ) }
+				title={ translate( 'Partner themes cannot be purchased on staging sites' ) }
+				description={ translate( 'Subscribe to this theme on your production site.' ) }
 			/>
 		);
 	};
