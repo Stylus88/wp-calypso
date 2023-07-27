@@ -11,7 +11,7 @@ import {
 import { Button } from '@automattic/components';
 import { WpcomPlansUI } from '@automattic/data-stores';
 import { useDispatch } from '@wordpress/data';
-import { useCallback, useState } from '@wordpress/element';
+import { useCallback, useLayoutEffect, useState } from '@wordpress/element';
 import classNames from 'classnames';
 import { localize, useTranslate } from 'i18n-calypso';
 import page from 'page';
@@ -181,6 +181,44 @@ const OnboardingPricingGrid2023 = ( props: OnboardingPricingGrid2023Props ) => {
 		) as PlanSlug | undefined;
 	}
 
+	const [ masterbarHeight, setMasterbarHeight ] = useState( 0 );
+
+	/**
+	 * Calculates the height of the masterbar if it exists, and passes it to the component as an offset
+	 * for the sticky CTA bar.
+	 */
+	useLayoutEffect( () => {
+		const masterbarElement = document.querySelector< HTMLDivElement >( 'header.masterbar' );
+
+		if ( ! masterbarElement ) {
+			return;
+		}
+
+		if ( ! window.ResizeObserver ) {
+			setMasterbarHeight( masterbarElement.offsetHeight );
+			return;
+		}
+
+		let lastHeight = masterbarElement.offsetHeight;
+
+		const observer = new ResizeObserver(
+			( [ masterbar ]: Parameters< ResizeObserverCallback >[ 0 ] ) => {
+				const currentHeight = masterbar.contentRect.height;
+
+				if ( currentHeight !== lastHeight ) {
+					setMasterbarHeight( currentHeight );
+					lastHeight = currentHeight;
+				}
+			}
+		);
+
+		observer.observe( masterbarElement );
+
+		return () => {
+			observer.disconnect();
+		};
+	}, [] );
+
 	const asyncProps: PlanFeatures2023GridProps = {
 		paidDomainName,
 		wpcomFreeDomainSuggestion,
@@ -204,6 +242,7 @@ const OnboardingPricingGrid2023 = ( props: OnboardingPricingGrid2023Props ) => {
 		isGlobalStylesOnPersonal: globalStylesInPersonalPlan,
 		showLegacyStorageFeature,
 		spotlightPlanSlug,
+		stickyRowOffset: masterbarHeight,
 	};
 
 	const asyncPlanFeatures2023Grid = (
