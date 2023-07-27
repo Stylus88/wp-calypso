@@ -10,12 +10,11 @@ import {
 import { Button } from '@automattic/components';
 import { WpcomPlansUI } from '@automattic/data-stores';
 import { useDispatch } from '@wordpress/data';
-import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from '@wordpress/element';
 import classNames from 'classnames';
 import { localize, useTranslate } from 'i18n-calypso';
 import page from 'page';
 import { useSelector } from 'react-redux';
-import AsyncLoad from 'calypso/components/async-load';
 import QueryPlans from 'calypso/components/data/query-plans';
 import QuerySitePlans from 'calypso/components/data/query-site-plans';
 import QuerySites from 'calypso/components/data/query-sites';
@@ -429,16 +428,20 @@ const PlansFeaturesMain = ( {
 		setShowPlansComparisonGrid( ! showPlansComparisonGrid );
 	};
 
-	useEffect( () => {
-		console.log( plansComparisonGridRef.current );
-		setTimeout( () => {
-			if ( showPlansComparisonGrid && plansComparisonGridRef.current ) {
-				scrollIntoViewport( plansComparisonGridRef.current, {
-					behavior: 'smooth',
-					scrollMode: 'if-needed',
-				} );
-			}
-		} );
+	useLayoutEffect( () => {
+		console.log( showPlansComparisonGrid, plansComparisonGridRef.current );
+		if ( showPlansComparisonGrid ) {
+			setTimeout( () => {
+				if ( plansComparisonGridRef.current ) {
+					scrollIntoViewport( plansComparisonGridRef.current, {
+						behavior: 'smooth',
+						scrollMode: 'if-needed',
+						block: 'nearest',
+						inline: 'nearest',
+					} );
+				}
+			}, 2000 );
+		}
 	}, [ showPlansComparisonGrid ] );
 
 	useEffect( () => {
