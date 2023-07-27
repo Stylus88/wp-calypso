@@ -10,7 +10,7 @@ import {
 import { Button } from '@automattic/components';
 import { WpcomPlansUI } from '@automattic/data-stores';
 import { useDispatch } from '@wordpress/data';
-import { useCallback, useState } from '@wordpress/element';
+import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
 import classNames from 'classnames';
 import { localize, useTranslate } from 'i18n-calypso';
 import page from 'page';
@@ -20,10 +20,14 @@ import QueryPlans from 'calypso/components/data/query-plans';
 import QuerySitePlans from 'calypso/components/data/query-site-plans';
 import QuerySites from 'calypso/components/data/query-sites';
 import FormattedHeader from 'calypso/components/formatted-header';
+import { retargetViewPlans } from 'calypso/lib/analytics/ad-tracking';
 import { planItem as getCartItemForPlan } from 'calypso/lib/cart-values/cart-items';
 import { isValidFeatureKey, FEATURES_LIST } from 'calypso/lib/plans/features-list';
+import scrollIntoViewport from 'calypso/lib/scroll-into-viewport';
+import PlanFeatures2023Grid from 'calypso/my-sites/plan-features-2023-grid';
 import PlanNotice from 'calypso/my-sites/plans-features-main/components/plan-notice';
 import PlanTypeSelector from 'calypso/my-sites/plans-features-main/components/plan-type-selector';
+import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import canUpgradeToPlan from 'calypso/state/selectors/can-upgrade-to-plan';
 import getDomainFromHomeUpsellInQuery from 'calypso/state/selectors/get-domain-from-home-upsell-in-query';
 import getPreviousRoute from 'calypso/state/selectors/get-previous-route';
@@ -93,11 +97,14 @@ export interface PlansFeaturesMainProps {
 type OnboardingPricingGrid2023Props = PlansFeaturesMainProps & {
 	gridPlansForComparisonGrid: GridPlan[];
 	gridPlansForFeaturesGrid: GridPlan[];
-	planTypeSelectorProps?: PlanTypeSelectorProps;
+	planTypeSelectorProps: PlanTypeSelectorProps;
 	sitePlanSlug?: PlanSlug | null;
 	siteSlug?: string | null;
 	intent?: PlansIntent;
 	isGlobalStylesOnPersonal?: boolean;
+	plansComparisonGridRef: React.RefObject< HTMLDivElement >;
+	showPlansComparisonGrid: boolean;
+	toggleShowPlansComparisonGrid: () => void;
 };
 
 const SecondaryFormattedHeader = ( { siteSlug }: { siteSlug?: string | null } ) => {
@@ -142,6 +149,9 @@ const OnboardingPricingGrid2023 = ( props: OnboardingPricingGrid2023Props ) => {
 		intent,
 		showLegacyStorageFeature,
 		isGlobalStylesOnPersonal,
+		plansComparisonGridRef,
+		showPlansComparisonGrid,
+		toggleShowPlansComparisonGrid,
 	} = props;
 	const translate = useTranslate();
 	const { setShowDomainUpsellDialog } = useDispatch( WpcomPlansUI.store );
@@ -189,15 +199,10 @@ const OnboardingPricingGrid2023 = ( props: OnboardingPricingGrid2023Props ) => {
 		showLegacyStorageFeature,
 		usePricingMetaForGridPlans,
 		allFeaturesList: FEATURES_LIST,
+		showPlansComparisonGrid,
+		toggleShowPlansComparisonGrid,
+		planTypeSelectorProps,
 	};
-
-	const asyncPlanFeatures2023Grid = (
-		<AsyncLoad
-			require="calypso/my-sites/plan-features-2023-grid"
-			{ ...asyncProps }
-			planTypeSelectorProps={ planTypeSelectorProps }
-		/>
-	);
 
 	return (
 		<div
@@ -206,7 +211,7 @@ const OnboardingPricingGrid2023 = ( props: OnboardingPricingGrid2023Props ) => {
 			} ) }
 			data-e2e-plans="wpcom"
 		>
-			{ asyncPlanFeatures2023Grid }
+			<PlanFeatures2023Grid { ...asyncProps } ref={ plansComparisonGridRef } />
 		</div>
 	);
 };
@@ -259,16 +264,6 @@ const PlansFeaturesMain = ( {
 	);
 	const previousRoute = useSelector( ( state: IAppState ) => getPreviousRoute( state ) );
 	const { globalStylesInPersonalPlan } = useSiteGlobalStylesStatus( siteId );
-
-	let _customerType = chooseDefaultCustomerType( {
-		currentCustomerType: customerType,
-		selectedPlan,
-		currentPlan: { productSlug: currentPlan?.productSlug },
-	} );
-	// Make sure the plans for the default customer type can be purchased.
-	if ( _customerType === 'personal' && userCanUpgradeToPersonalPlan ) {
-		_customerType = 'business';
-	}
 
 	const isDisplayingPlansNeededForFeature = () => {
 		if (
@@ -402,6 +397,16 @@ const PlansFeaturesMain = ( {
 		hidePlanSelector = true;
 	}
 
+	let _customerType = chooseDefaultCustomerType( {
+		currentCustomerType: customerType,
+		selectedPlan,
+		currentPlan: { productSlug: currentPlan?.productSlug },
+	} );
+	// Make sure the plans for the default customer type can be purchased.
+	if ( _customerType === 'personal' && userCanUpgradeToPersonalPlan ) {
+		_customerType = 'business';
+	}
+
 	const planTypeSelectorProps = {
 		basePlansPath,
 		isStepperUpgradeFlow,
@@ -417,6 +422,29 @@ const PlansFeaturesMain = ( {
 		kind: planTypeSelector,
 		plans: filteredPlansForPlanFeatures.map( ( gridPlan ) => gridPlan.planSlug ),
 	};
+
+	const plansComparisonGridRef = useRef< HTMLDivElement >( null );
+	const [ showPlansComparisonGrid, setShowPlansComparisonGrid ] = useState( false );
+	const toggleShowPlansComparisonGrid = () => {
+		setShowPlansComparisonGrid( ! showPlansComparisonGrid );
+	};
+
+	useEffect( () => {
+		console.log( plansComparisonGridRef.current );
+		setTimeout( () => {
+			if ( showPlansComparisonGrid && plansComparisonGridRef.current ) {
+				scrollIntoViewport( plansComparisonGridRef.current, {
+					behavior: 'smooth',
+					scrollMode: 'if-needed',
+				} );
+			}
+		} );
+	}, [ showPlansComparisonGrid ] );
+
+	useEffect( () => {
+		recordTracksEvent( 'calypso_wp_plans_test_view' );
+		retargetViewPlans();
+	}, [] );
 
 	return (
 		<div
@@ -482,6 +510,9 @@ const PlansFeaturesMain = ( {
 						intent={ intent }
 						showLegacyStorageFeature={ showLegacyStorageFeature }
 						isGlobalStylesOnPersonal={ globalStylesInPersonalPlan }
+						plansComparisonGridRef={ plansComparisonGridRef }
+						showPlansComparisonGrid={ showPlansComparisonGrid }
+						toggleShowPlansComparisonGrid={ toggleShowPlansComparisonGrid }
 					/>
 				</>
 			) }
