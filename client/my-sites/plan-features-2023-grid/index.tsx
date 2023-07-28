@@ -34,7 +34,7 @@ import { Button } from '@wordpress/components';
 import classNames from 'classnames';
 import { LocalizeProps, useTranslate } from 'i18n-calypso';
 import { Component, ForwardedRef, forwardRef } from 'react';
-import { connect, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import QueryActivePromotions from 'calypso/components/data/query-active-promotions';
 import FoldableCard from 'calypso/components/foldable-card';
 import { useIsPlanUpgradeCreditVisible } from 'calypso/my-sites/plan-features-2023-grid/hooks/use-is-plan-upgrade-credit-visible';
@@ -718,8 +718,6 @@ export class PlanFeatures2023Grid extends Component< PlanFeatures2023GridType > 
 			showPlansComparisonGrid,
 		} = this.props;
 
-		console.log( 'render', showPlansComparisonGrid, plansComparisonGridRef );
-
 		return (
 			<div className="plans-wrapper">
 				<QueryActivePromotions />
@@ -795,7 +793,7 @@ export class PlanFeatures2023Grid extends Component< PlanFeatures2023GridType > 
 	}
 }
 
-const WrappedPlanFeatures2023Grid = forwardRef< HTMLDivElement, PlanFeatures2023GridProps >(
+export default forwardRef< HTMLDivElement, PlanFeatures2023GridProps >(
 	function WrappedPlanFeatures2023Grid( props, ref ) {
 		const { siteId } = props;
 		const translate = useTranslate();
@@ -855,17 +853,3 @@ const WrappedPlanFeatures2023Grid = forwardRef< HTMLDivElement, PlanFeatures2023
 		);
 	}
 );
-
-export default WrappedPlanFeatures2023Grid;
-
-// const PlanFeatures2023GridWithRef = forwardRef< HTMLDivElement, PlanFeatures2023GridProps >(
-// 	function PlanFeatures2023GridWithRef( props, ref ) {
-// 		return <PlanFeatures2023Grid { ...props } ref={ ref } />;
-// 	}
-// );
-
-// export default forwardRef(
-// 	( props: PlanFeatures2023GridProps, ref: ForwardedRef< HTMLDivElement > ) => (
-// 		<WrappedPlanFeatures2023Grid { ...props } ref={ ref } />
-// 	)
-// );

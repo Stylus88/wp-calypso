@@ -52,7 +52,6 @@ import type {
 } from '../plan-features-2023-grid/hooks/npm-ready/data-store/use-grid-plans';
 import type { DomainSuggestion } from '@automattic/data-stores';
 import type { MinimalRequestCartProduct } from '@automattic/shopping-cart';
-import type { PlanFeatures2023GridProps } from 'calypso/my-sites/plan-features-2023-grid';
 import type { PlanActionOverrides } from 'calypso/my-sites/plan-features-2023-grid/types';
 import type { PlanTypeSelectorProps } from 'calypso/my-sites/plans-features-main/components/plan-type-selector';
 import type { IAppState } from 'calypso/state/types';
@@ -176,33 +175,6 @@ const OnboardingPricingGrid2023 = ( props: OnboardingPricingGrid2023Props ) => {
 		};
 	}
 
-	const asyncProps: PlanFeatures2023GridProps = {
-		paidDomainName,
-		isInSignup,
-		isLaunchPage,
-		onUpgradeClick,
-		flowName,
-		selectedFeature,
-		selectedPlan,
-		siteId,
-		isReskinned,
-		intervalType,
-		hidePlansFeatureComparison,
-		hideUnavailableFeatures,
-		currentSitePlanSlug: sitePlanSlug,
-		planActionOverrides,
-		intent,
-		isGlobalStylesOnPersonal,
-		gridPlansForFeaturesGrid,
-		gridPlansForComparisonGrid,
-		showLegacyStorageFeature,
-		usePricingMetaForGridPlans,
-		allFeaturesList: FEATURES_LIST,
-		showPlansComparisonGrid,
-		toggleShowPlansComparisonGrid,
-		planTypeSelectorProps,
-	};
-
 	return (
 		<div
 			className={ classNames( 'plans-features-main__group', 'is-wpcom', 'is-2023-pricing-grid', {
@@ -210,7 +182,33 @@ const OnboardingPricingGrid2023 = ( props: OnboardingPricingGrid2023Props ) => {
 			} ) }
 			data-e2e-plans="wpcom"
 		>
-			<PlanFeatures2023Grid { ...asyncProps } ref={ plansComparisonGridRef } />
+			<PlanFeatures2023Grid
+				paidDomainName={ paidDomainName }
+				isInSignup={ isInSignup }
+				isLaunchPage={ isLaunchPage }
+				onUpgradeClick={ onUpgradeClick }
+				flowName={ flowName }
+				selectedFeature={ selectedFeature }
+				selectedPlan={ selectedPlan }
+				siteId={ siteId }
+				isReskinned={ isReskinned }
+				intervalType={ intervalType }
+				hidePlansFeatureComparison={ hidePlansFeatureComparison }
+				hideUnavailableFeatures={ hideUnavailableFeatures }
+				currentSitePlanSlug={ sitePlanSlug }
+				planActionOverrides={ planActionOverrides }
+				intent={ intent }
+				isGlobalStylesOnPersonal={ isGlobalStylesOnPersonal }
+				gridPlansForFeaturesGrid={ gridPlansForFeaturesGrid }
+				gridPlansForComparisonGrid={ gridPlansForComparisonGrid }
+				showLegacyStorageFeature={ showLegacyStorageFeature }
+				usePricingMetaForGridPlans={ usePricingMetaForGridPlans }
+				allFeaturesList={ FEATURES_LIST }
+				showPlansComparisonGrid={ showPlansComparisonGrid }
+				toggleShowPlansComparisonGrid={ toggleShowPlansComparisonGrid }
+				planTypeSelectorProps={ planTypeSelectorProps }
+				ref={ plansComparisonGridRef }
+			/>
 		</div>
 	);
 };
@@ -429,7 +427,6 @@ const PlansFeaturesMain = ( {
 	};
 
 	useLayoutEffect( () => {
-		console.log( showPlansComparisonGrid, plansComparisonGridRef.current );
 		if ( showPlansComparisonGrid ) {
 			setTimeout( () => {
 				if ( plansComparisonGridRef.current ) {
@@ -440,7 +437,7 @@ const PlansFeaturesMain = ( {
 						inline: 'nearest',
 					} );
 				}
-			}, 2000 );
+			} );
 		}
 	}, [ showPlansComparisonGrid ] );
 
