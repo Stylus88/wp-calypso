@@ -12,6 +12,7 @@ import {
 	PLAN_ENTERPRISE_GRID_WPCOM,
 	PlanSlug,
 	FEATURE_GROUP_PAYMENT_TRANSACTION_FEES,
+	getPlans,
 } from '@automattic/calypso-products';
 import { Gridicon, JetpackLogo } from '@automattic/components';
 import { css } from '@emotion/react';
@@ -833,20 +834,28 @@ export const PlanComparisonGrid = ( {
 	}, [ featureGroupMap ] );
 
 	const allJetpackFeatures = useMemo( () => {
+		const allPlans = getPlans();
 		const jetpackFeatures = new Set(
-			gridPlans
-				.map( ( { planConstantObj } ) => {
-					const jetpackFeatures = planConstantObj.get2023PricingGridSignupJetpackFeatures?.() ?? [];
-					const additionalJetpackFeatures =
-						planConstantObj.get2023PlanComparisonJetpackFeatureOverride?.() ?? [];
+			Object.values( allPlans )
+				.map(
+					( {
+						get2023PricingGridSignupJetpackFeatures,
+						get2023PlanComparisonJetpackFeatureOverride,
+					} ) => {
+						const jetpackFeatures = get2023PricingGridSignupJetpackFeatures?.();
+						const additionalJetpackFeatures = get2023PlanComparisonJetpackFeatureOverride?.();
 
-					return jetpackFeatures.concat( ...additionalJetpackFeatures );
-				} )
+						return [
+							...( jetpackFeatures ? jetpackFeatures : [] ),
+							...( additionalJetpackFeatures ? additionalJetpackFeatures : [] ),
+						];
+					}
+				)
 				.flat()
 		);
 
 		return jetpackFeatures;
-	}, [ gridPlans ] );
+	}, [] );
 
 	const onPlanChange = useCallback(
 		( currentPlan: PlanSlug, event: ChangeEvent< HTMLSelectElement > ) => {

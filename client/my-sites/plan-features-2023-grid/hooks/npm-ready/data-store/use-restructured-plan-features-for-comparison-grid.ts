@@ -64,23 +64,31 @@ const useRestructuredPlanFeaturesForComparisonGrid: UseRestructuredPlanFeaturesF
 				const annualPlansOnlyFeatures = planConstantObj.getAnnualPlansOnlyFeatures?.();
 				const isMonthlyPlan = isMonthly( planSlug );
 
-				const wpcomFeaturesOverrides = planConstantObj.get2023PlanComparisonFeatureOverride
+				const wpcomFeatures = planConstantObj.get2023PlanComparisonFeatureOverride
 					? getPlanFeaturesObject(
 							allFeaturesList,
 							planConstantObj.get2023PlanComparisonFeatureOverride().slice()
 					  )
-					: null;
+					: getPlanFeaturesObject(
+							allFeaturesList,
+							planConstantObj
+								.get2023PricingGridSignupWpcomFeatures?.( isGlobalStylesOnPersonal )
+								.slice()
+					  );
 
-				const jetpackFeaturesOverrides = planConstantObj.get2023PlanComparisonJetpackFeatureOverride
+				const jetpackFeatures = planConstantObj.get2023PlanComparisonJetpackFeatureOverride
 					? getPlanFeaturesObject(
 							allFeaturesList,
 							planConstantObj.get2023PlanComparisonJetpackFeatureOverride().slice()
 					  )
-					: null;
+					: getPlanFeaturesObject(
+							allFeaturesList,
+							planConstantObj.get2023PricingGridSignupJetpackFeatures?.().slice()
+					  );
 
-				const wpcomFeaturesOverridesTransformed: TransformedFeatureObject[] | null | undefined =
+				const wpcomFeaturesTransformed: TransformedFeatureObject[] | null | undefined =
 					annualPlansOnlyFeatures
-						? wpcomFeaturesOverrides?.map( ( feature ) => {
+						? wpcomFeatures?.map( ( feature ) => {
 								const availableOnlyForAnnualPlans = annualPlansOnlyFeatures.includes(
 									feature.getSlug()
 								);
@@ -93,9 +101,9 @@ const useRestructuredPlanFeaturesForComparisonGrid: UseRestructuredPlanFeaturesF
 						  } )
 						: null;
 
-				const jetpackFeaturesOverridesTransformed: TransformedFeatureObject[] | null | undefined =
+				const jetpackFeaturesTransformed: TransformedFeatureObject[] | null | undefined =
 					annualPlansOnlyFeatures
-						? jetpackFeaturesOverrides?.map( ( feature ) => {
+						? jetpackFeatures?.map( ( feature ) => {
 								const availableOnlyForAnnualPlans = annualPlansOnlyFeatures.includes(
 									feature.getSlug()
 								);
@@ -110,18 +118,12 @@ const useRestructuredPlanFeaturesForComparisonGrid: UseRestructuredPlanFeaturesF
 
 				const featuresAvailable = isWooExpressPlan( planSlug )
 					? {
-							wpcomFeatures:
-								wpcomFeaturesOverridesTransformed ||
-								planFeaturesForGridPlans[ planSlug ].wpcomFeatures,
+							wpcomFeatures: wpcomFeaturesTransformed ?? [],
 							jetpackFeatures: [],
 					  }
 					: {
-							wpcomFeatures:
-								wpcomFeaturesOverridesTransformed ||
-								planFeaturesForGridPlans[ planSlug ].wpcomFeatures,
-							jetpackFeatures:
-								jetpackFeaturesOverridesTransformed ||
-								planFeaturesForGridPlans[ planSlug ].jetpackFeatures,
+							wpcomFeatures: wpcomFeaturesTransformed ?? [],
+							jetpackFeatures: jetpackFeaturesTransformed ?? [],
 					  };
 
 				const previousPlanFeatures = {

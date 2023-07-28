@@ -376,13 +376,15 @@ const PlansFeaturesMain = ( {
 			hideEcommercePlan,
 		} ) || null;
 
-	// we need all the available plans for comparison grid (these should extend into plans-ui data store selectors)
-	const gridPlansForComparisonGrid = filteredPlansForPlanFeatures.map( ( gridPlan ) => {
-		return {
-			...gridPlan,
-			features: { ...planFeaturesForComparisonGrid[ gridPlan.planSlug ] },
-		} as GridPlan;
-	} );
+	// we neeed only the visible ones for comparison grid (these should extend into plans-ui data store selectors)
+	const gridPlansForComparisonGrid = filteredPlansForPlanFeatures.reduce( ( acc, gridPlan ) => {
+		return [
+			...acc,
+			...( gridPlan.isVisible
+				? [ { ...gridPlan, features: planFeaturesForComparisonGrid[ gridPlan.planSlug ] } ]
+				: [] ),
+		];
+	}, [] as GridPlan[] );
 
 	// we neeed only the visible ones for features grid (these should extend into plans-ui data store selectors)
 	const gridPlansForFeaturesGrid = filteredPlansForPlanFeatures.reduce( ( acc, gridPlan ) => {
