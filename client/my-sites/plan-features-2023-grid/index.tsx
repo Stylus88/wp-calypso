@@ -273,6 +273,7 @@ export class PlanFeatures2023Grid extends Component<
 			planRecords,
 			visiblePlans,
 			showLegacyStorageFeature,
+			stickyRowOffset,
 		} = this.props;
 		return (
 			<PlansGridContextProvider
@@ -329,6 +330,7 @@ export class PlanFeatures2023Grid extends Component<
 								selectedFeature={ selectedFeature }
 								isGlobalStylesOnPersonal={ isGlobalStylesOnPersonal }
 								showLegacyStorageFeature={ showLegacyStorageFeature }
+								stickyRowOffset={ stickyRowOffset }
 							/>
 							<div className="plan-features-2023-grid__toggle-plan-comparison-button-container">
 								<Button onClick={ this.toggleShowPlansComparisonGrid }>
