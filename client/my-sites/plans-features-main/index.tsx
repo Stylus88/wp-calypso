@@ -417,7 +417,7 @@ const PlansFeaturesMain = ( {
 		selectedFeature,
 		showBiennialToggle,
 		kind: planTypeSelector,
-		plans: filteredPlansForPlanFeatures.map( ( gridPlan ) => gridPlan.planSlug ),
+		plans: gridPlansForFeaturesGrid.map( ( gridPlan ) => gridPlan.planSlug ),
 	};
 
 	return (
@@ -444,7 +444,7 @@ const PlansFeaturesMain = ( {
 			) }
 			{ siteId && (
 				<PlanNotice
-					visiblePlans={ Object.keys( filteredPlansForPlanFeatures ) as PlanSlug[] }
+					visiblePlans={ gridPlansForFeaturesGrid.map( ( gridPlan ) => gridPlan.planSlug ) }
 					siteId={ siteId }
 					isInSignup={ isInSignup }
 					{ ...( withDiscount &&
