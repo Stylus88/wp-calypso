@@ -14,7 +14,7 @@ import { addQueryArgs } from 'calypso/lib/url';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import { setPurchasedLicense, resetSite } from 'calypso/state/jetpack-agency-dashboard/actions';
 import { errorNotice } from 'calypso/state/notices/actions';
-import { areLicenseKeysAssignableToMultisite } from '../utils';
+import areLicenseKeysAssignableToMultisite from '../lib/are-license-keys-assignable-to-multisite';
 import './style.scss';
 
 function setPage( pageNumber: number ): void {
