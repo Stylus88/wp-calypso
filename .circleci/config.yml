@@ -351,11 +351,11 @@ jobs:
       - run:
           name: Install Desktop Dependencies
           command: |
-            yarn
-
             # Install 32-bit Windows dependencies.
             # See stackoverflow.com/q/61065690
-            npx electron-builder install-app-deps --platform=win32 --arch=x64
+            npm set npm_config_arch ia32
+
+            yarn
       - when:
           condition: << pipeline.git.tag >>
           steps:
