@@ -71,7 +71,6 @@ const CustomerHomeLaunchpad = ( {
 					</div>
 				) : (
 					<div className="customer-home-launchpad__dismiss-button">
-						<span> { translate( 'Dismiss guide' ) } </span>
 						<Button
 							className="themes__activation-modal-close-icon"
 							borderless
@@ -84,6 +83,7 @@ const CustomerHomeLaunchpad = ( {
 								} );
 							} }
 						>
+							<div> { translate( 'Dismiss guide' ) } </div>
 							<Gridicon icon="cross" size={ 12 } />
 						</Button>
 					</div>
