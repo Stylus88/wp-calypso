@@ -14,7 +14,6 @@ import {
 	isWooExpressPlan,
 	PlanSlug,
 	isWooExpressPlusPlan,
-	WPComStorageAddOnSlug,
 } from '@automattic/calypso-products';
 import {
 	JetpackLogo,
@@ -78,8 +77,6 @@ type PlanRowOptions = {
 	isTableCell?: boolean;
 };
 
-export type PlanSelectedStorage = { [ key: string ]: WPComStorageAddOnSlug | null };
-
 const Container = (
 	props: (
 		| React.HTMLAttributes< HTMLDivElement >
@@ -142,7 +139,6 @@ type PlanFeatures2023GridType = PlanFeatures2023GridProps &
 
 type PlanFeatures2023GridState = {
 	showPlansComparisonGrid: boolean;
-	selectedStorage: PlanSelectedStorage;
 };
 
 const PlanLogo: React.FunctionComponent< {
@@ -222,7 +218,6 @@ export class PlanFeatures2023Grid extends Component<
 > {
 	state: PlanFeatures2023GridState = {
 		showPlansComparisonGrid: false,
-		selectedStorage: {},
 	};
 
 	plansComparisonGridContainerRef = createRef< HTMLDivElement >();
@@ -236,15 +231,6 @@ export class PlanFeatures2023Grid extends Component<
 	toggleShowPlansComparisonGrid = () => {
 		this.setState( ( { showPlansComparisonGrid } ) => ( {
 			showPlansComparisonGrid: ! showPlansComparisonGrid,
-		} ) );
-	};
-
-	setSelectedStorage = ( updatedSelectedStorage: PlanSelectedStorage ) => {
-		this.setState( ( { selectedStorage } ) => ( {
-			selectedStorage: {
-				...selectedStorage,
-				...updatedSelectedStorage,
-			},
 		} ) );
 	};
 
@@ -909,7 +895,6 @@ export class PlanFeatures2023Grid extends Component<
 
 	renderPlanStorageOptions( planPropertiesObj: PlanProperties[], options?: PlanRowOptions ) {
 		const { translate, intervalType, showUpgradeableStorage } = this.props;
-		const { selectedStorage } = this.state;
 
 		return planPropertiesObj
 			.filter( ( { isVisible } ) => isVisible )
@@ -928,11 +913,7 @@ export class PlanFeatures2023Grid extends Component<
 					storageOptions.length > 1 && intervalType === 'yearly' && showUpgradeableStorage;
 
 				const storageJSX = canUpgradeStorageForPlan ? (
-					<StorageAddOnDropdown
-						planProperties={ properties }
-						selectedStorage={ selectedStorage }
-						setSelectedStorage={ this.setSelectedStorage }
-					/>
+					<StorageAddOnDropdown planProperties={ properties } />
 				) : (
 					storageOptions.map( ( storageOption ) => {
 						if ( ! storageOption?.isAddOn ) {
