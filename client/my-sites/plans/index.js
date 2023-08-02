@@ -20,7 +20,7 @@ import {
 	redirectToPlansIfNotJetpack,
 } from './controller';
 import { currentPlan } from './current-plan/controller';
-import { trialExpired, trialUpgradeConfirmation } from './ecommerce-trial/controller';
+import { trialExpired, trialUpgradeConfirmation } from './trials/controller';
 
 const trackedPage = ( url, ...rest ) => {
 	page( url, ...rest, makeLayout, clientRender );

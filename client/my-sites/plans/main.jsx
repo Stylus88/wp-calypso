@@ -10,6 +10,7 @@ import {
 	PLAN_WOOEXPRESS_MEDIUM,
 	PLAN_WOOEXPRESS_MEDIUM_MONTHLY,
 	FEATURE_LEGACY_STORAGE_200GB,
+	PLAN_MIGRATION_TRIAL_MONTHLY,
 } from '@automattic/calypso-products';
 import { WpcomPlansUI } from '@automattic/data-stores';
 import { withShoppingCart } from '@automattic/shopping-cart';
@@ -54,8 +55,9 @@ import withCartKey from '../checkout/with-cart-key';
 import DomainAndPlanPackageNavigation from '../domains/components/domain-and-plan-package/navigation';
 import DomainUpsellDialog from './components/domain-upsell-dialog';
 import PlansHeader from './components/plans-header';
-import ECommerceTrialPlansPage from './ecommerce-trial';
 import ModernizedLayout from './modernized-layout';
+import ECommerceTrialPlansPage from './trials/ecommerce-trial-plans-page';
+import MigrationTrialPlansPage from './trials/migration-trial-plans-page';
 import WooExpressPlansPage from './woo-express-plans-page';
 
 import './style.scss';
@@ -293,6 +295,16 @@ class Plans extends Component {
 		return interval;
 	}
 
+	getIntervalForMigrationPlans() {
+		const { intervalType } = this.props;
+
+		// Only accept monthly or yearly for the interval; otherwise let the component provide a default.
+		const interval =
+			intervalType === 'monthly' || intervalType === 'yearly' ? intervalType : undefined;
+
+		return interval;
+	}
+
 	renderEcommerceTrialPage() {
 		const { selectedSite } = this.props;
 
@@ -303,6 +315,18 @@ class Plans extends Component {
 		const interval = this.getIntervalForWooExpressPlans();
 
 		return <ECommerceTrialPlansPage interval={ interval } site={ selectedSite } />;
+	}
+
+	renderMigrationTrialPage() {
+		const { selectedSite } = this.props;
+
+		if ( ! selectedSite ) {
+			return this.renderPlaceholder();
+		}
+
+		const interval = this.getIntervalForMigrationPlans();
+
+		return <MigrationTrialPlansPage interval={ interval } site={ selectedSite } />;
 	}
 
 	renderWooExpressPlansPage() {
@@ -324,12 +348,15 @@ class Plans extends Component {
 		);
 	}
 
-	renderMainContent( { isEcommerceTrial, isWooExpressPlan } ) {
+	renderMainContent( { isEcommerceTrial, isMigrationTrial, isWooExpressPlan } ) {
 		if ( isEcommerceTrial ) {
 			return this.renderEcommerceTrialPage();
 		}
 		if ( isWooExpressPlan ) {
 			return this.renderWooExpressPlansPage();
+		}
+		if ( isMigrationTrial ) {
+			return this.renderMigrationTrialPage();
 		}
 		return this.renderPlansMain();
 	}
@@ -357,6 +384,7 @@ class Plans extends Component {
 
 		const currentPlanSlug = selectedSite?.plan?.product_slug;
 		const isEcommerceTrial = currentPlanSlug === PLAN_ECOMMERCE_TRIAL_MONTHLY;
+		const isMigrationTrial = currentPlanSlug === PLAN_MIGRATION_TRIAL_MONTHLY;
 		const isWooExpressPlan = [
 			PLAN_WOOEXPRESS_MEDIUM,
 			PLAN_WOOEXPRESS_MEDIUM_MONTHLY,
@@ -433,7 +461,11 @@ class Plans extends Component {
 								{ ! isDomainAndPlanPackageFlow && domainAndPlanPackage && (
 									<DomainAndPlanUpsellNotice />
 								) }
-								{ this.renderMainContent( { isEcommerceTrial, isWooExpressPlan } ) }
+								{ this.renderMainContent( {
+									isEcommerceTrial,
+									isMigrationTrial,
+									isWooExpressPlan,
+								} ) }
 								<PerformanceTrackerStop />
 							</Main>
 						</div>

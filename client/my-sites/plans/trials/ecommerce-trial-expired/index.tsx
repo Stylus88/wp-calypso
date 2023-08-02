@@ -8,7 +8,7 @@ import QuerySitePurchases from 'calypso/components/data/query-site-purchases';
 import Main from 'calypso/components/main';
 import BodySectionCssClass from 'calypso/layout/body-section-css-class';
 import PageViewTracker from 'calypso/lib/analytics/page-view-tracker';
-import { WooExpressPlans } from 'calypso/my-sites/plans/ecommerce-trial/wooexpress-plans';
+import { WooExpressPlans } from 'calypso/my-sites/plans/trials/wooexpress-plans';
 import { useSelector } from 'calypso/state';
 import { getSitePurchases } from 'calypso/state/purchases/selectors';
 import isSiteAutomatedTransfer from 'calypso/state/selectors/is-site-automated-transfer';

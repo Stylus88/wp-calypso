@@ -2,8 +2,8 @@ import { recordTracksEvent } from '@automattic/calypso-analytics';
 import { plansLink } from '@automattic/calypso-products';
 import { useCallback } from 'react';
 import BodySectionCssClass from 'calypso/layout/body-section-css-class';
-import ECommerceTrialBanner from './ecommerce-trial-banner';
-import { WooExpressPlans } from './wooexpress-plans';
+import ECommerceTrialBanner from '../ecommerce-trial-banner';
+import { WooExpressPlans } from '../wooexpress-plans';
 import type { Site } from 'calypso/my-sites/scan/types';
 
 import './style.scss';

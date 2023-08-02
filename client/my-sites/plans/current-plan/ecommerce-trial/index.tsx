@@ -21,7 +21,7 @@ import BodySectionCssClass from 'calypso/layout/body-section-css-class';
 import { getECommerceTrialCheckoutUrl } from 'calypso/lib/ecommerce-trial/get-ecommerce-trial-checkout-url';
 import { useSelector } from 'calypso/state';
 import { getSelectedSite } from 'calypso/state/ui/selectors';
-import ECommerceTrialBanner from '../../ecommerce-trial/ecommerce-trial-banner';
+import ECommerceTrialBanner from '../../trials/ecommerce-trial-banner';
 import FeatureIncludedCard from '../feature-included-card';
 import FeatureNotIncludedCard from '../feature-not-included-card';
 
