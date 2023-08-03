@@ -14,6 +14,7 @@ import { isMobile } from '@automattic/viewport';
 import styled from '@emotion/styled';
 import classNames from 'classnames';
 import i18n, { localize, TranslateResult, useTranslate } from 'i18n-calypso';
+import { useState } from 'react';
 import ExternalLinkWithTracking from 'calypso/components/external-link/with-tracking';
 import { recordTracksEvent } from 'calypso/lib/analytics/tracks';
 import { useSelector } from 'calypso/state';
@@ -150,6 +151,7 @@ const LoggedInPlansFeatureActionButton = ( {
 	selectedSiteSlug: string | null;
 	planActionOverrides?: PlanActionOverrides;
 } ) => {
+	const [ activeTooltipId, setActiveTooltipId ] = useState( '' );
 	const translate = useTranslate();
 	const currentPlanBillPeriod = useSelector( ( state ) => {
 		return currentSitePlanSlug ? getPlanBillPeriod( state, currentSitePlanSlug ) : null;
@@ -252,7 +254,11 @@ const LoggedInPlansFeatureActionButton = ( {
 
 	if ( ! availableForPurchase ) {
 		return (
-			<Plans2023Tooltip text={ translate( 'Please contact support to downgrade your plan.' ) }>
+			<Plans2023Tooltip
+				text={ translate( 'Please contact support to downgrade your plan.' ) }
+				setActiveTooltipId={ setActiveTooltipId }
+				activeTooltipId={ activeTooltipId }
+			>
 				<DummyDisabledButton>{ translate( 'Downgrade', { context: 'verb' } ) }</DummyDisabledButton>
 				{ isMobile() && (
 					<div className="plan-features-2023-grid__actions-downgrade-context-mobile">
