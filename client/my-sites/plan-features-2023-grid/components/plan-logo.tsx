@@ -23,7 +23,9 @@ const PlanLogo: React.FunctionComponent< {
 	isTableCell?: boolean;
 	planIndex: number;
 	planProperties: PlanProperties;
-	Container: HTMLDivElement | HTMLTableElement;
+	Container: (
+		props: React.HTMLAttributes< HTMLDivElement > | React.HTMLAttributes< HTMLTableCellElement >
+	) => JSX.Element;
 } > = ( {
 	planProperties,
 	isInSignup,
